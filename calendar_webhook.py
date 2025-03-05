@@ -60,4 +60,5 @@ def get_availability():
     return jsonify(free_slots)
 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)  # ✅ This starts Flask when running the script
+    app.run(host="0.0.0.0", port=5000, debug=True)
+  # ✅ This starts Flask when running the script
