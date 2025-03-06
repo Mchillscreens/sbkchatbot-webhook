@@ -53,32 +53,35 @@ def get_free_slots():
                 busy_times.append((event_start, event_end))
 
         # Finding free time slots
-        free_slots = []
+        free_slots = {}
         previous_end = now
 
         for start, end in sorted(busy_times):
             if previous_end < start:
                 formatted_date = format_date_short(previous_end)  # Convert to MM/DD/YY format
-                booking_link = f"{BOOKING_URL}"  # Use the correct Jobber booking link
+                day_key = previous_end.strftime("%Y-%m-%d")  # Unique key for each day
                 
-                # Store the date and link in JSON format for proper button formatting
-                free_slots.append({
-                    "text": formatted_date,
-                    "postback": booking_link
-                })
+                # Only add one button per day
+                if day_key not in free_slots:
+                    free_slots[day_key] = {
+                        "text": formatted_date,
+                        "postback": BOOKING_URL  # Use the correct Jobber booking link
+                    }
                 
             previous_end = max(previous_end, end)
 
-        if not free_slots:
-            free_slots.append({
-                "text": "No available slots",
-                "postback": BOOKING_URL
-            })
+        buttons = list(free_slots.values())
+
+        # ✅ Always add a "See All Available" button at the end
+        buttons.append({
+            "text": "See All Available",
+            "postback": BOOKING_URL
+        })
 
         # ✅ Log available slots for debugging
-        print("Available Slots:", free_slots)
+        print("Available Slots:", buttons)
 
-        # ✅ Return JSON with proper button formatting
+        # ✅ Return JSON with properly formatted buttons
         return {
             "fulfillment_response": {
                 "messages": [
@@ -89,7 +92,7 @@ def get_free_slots():
                                     {"type": "text", "text": "Select an available date:"},
                                     *[
                                         {"type": "button", "text": slot["text"], "link": slot["postback"]}
-                                        for slot in free_slots
+                                        for slot in buttons
                                     ]
                                 ]
                             ]
