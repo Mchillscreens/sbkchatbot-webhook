@@ -1,3 +1,25 @@
+import os
+from flask import Flask, request, jsonify
+import requests
+import datetime
+from ics import Calendar
+import pytz
+
+app = Flask(__name__)  # ✅ Define the Flask app
+
+# ✅ Get port from environment variable (Render requires this)
+PORT = int(os.environ.get("PORT", 5000))
+
+# Your Jobber booking link
+BOOKING_URL = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
+
+# Your Jobber iCal URL
+ICAL_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics"
+
+def format_date_short(dt):
+    """Formats datetime into 'MM/DD/YY' format for button text."""
+    return dt.strftime("%-m/%-d/%y")  # Example: '3/16/25'
+
 def get_free_slots():
     """Fetches and parses the Jobber iCal feed to find available time slots."""
     try:
@@ -88,3 +110,13 @@ def get_free_slots():
             }
         }
 
+@app.route("/get_availability", methods=["POST"])
+def get_availability():
+    """Handles webhook requests and returns available slots."""
+    print("Webhook called!")  # ✅ Debugging log
+    free_slots = get_free_slots()
+    return jsonify(free_slots)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT, debug=True)
+  # ✅ This starts Flask when running the script
