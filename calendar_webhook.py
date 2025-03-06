@@ -8,6 +8,11 @@ app = Flask(__name__)  # ✅ Define the Flask app
 
 # Your Jobber iCal URL
 ICAL_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics"
+BOOKING_URL = "https://screensbykaidan.com/booking"  # ✅ Your direct booking page
+
+def format_datetime(dt):
+    """Formats datetime into a readable string like 'Thursday, March 6, 10:00 AM - 2:00 PM'"""
+    return dt.strftime("%A, %B %-d, %I:%M %p")
 
 def get_free_slots():
     """Fetches and parses the Jobber iCal feed to find available time slots."""
@@ -51,9 +56,14 @@ def get_free_slots():
 
         for start, end in sorted(busy_times):
             if previous_end < start:
-                free_slots.append(
-                    f"Available from {previous_end.strftime('%Y-%m-%d %H:%M')} to {start.strftime('%Y-%m-%d %H:%M')}"
-                )
+                formatted_start = format_datetime(previous_end)
+                formatted_end = format_datetime(start)
+                
+                slot_text = f"{formatted_start} - {formatted_end}"
+                booking_link = f"[📅 Book for {slot_text}]({BOOKING_URL})"
+                
+                free_slots.append(booking_link)
+                
             previous_end = max(previous_end, end)
 
         if not free_slots:
@@ -62,7 +72,7 @@ def get_free_slots():
         # ✅ Log available slots for debugging
         print("Available Slots:", free_slots)
 
-        # ✅ Correctly format the response for Dialogflow CX
+        # ✅ Correctly format the response for Dialogflow CX with buttons
         return {
             "fulfillment_response": {
                 "messages": [
@@ -97,4 +107,3 @@ def get_availability():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
   # ✅ This starts Flask when running the script
-
