@@ -12,9 +12,18 @@ ICAL_URL = "https://secure.getjobber.com/calendar/353573034844361545162134515272
 def get_free_slots():
     """Fetches and parses the Jobber iCal feed to find available time slots."""
     try:
-        response = requests.get(ICAL_URL)
+        print("Fetching calendar data...")  # ✅ Debugging log
+
+        response = requests.get(ICAL_URL, timeout=10)  # ✅ Added timeout for reliability
         if response.status_code != 200:
-            return {"error": "Failed to fetch calendar"}
+            print("Error: Failed to fetch calendar data")  # ✅ Debug log
+            return {
+                "fulfillment_response": {
+                    "messages": [
+                        {"text": {"text": ["Error: Could not retrieve calendar data."]}}
+                    ]
+                }
+            }
 
         calendar = Calendar(response.text)
 
@@ -42,23 +51,50 @@ def get_free_slots():
 
         for start, end in sorted(busy_times):
             if previous_end < start:
-                free_slots.append(f"Available from {previous_end.strftime('%Y-%m-%d %H:%M')} to {start.strftime('%Y-%m-%d %H:%M')}")
+                free_slots.append(
+                    f"Available from {previous_end.strftime('%Y-%m-%d %H:%M')} to {start.strftime('%Y-%m-%d %H:%M')}"
+                )
             previous_end = max(previous_end, end)
 
         if not free_slots:
             free_slots.append("No available slots in the next 7 days.")
 
-        return {"available_slots": free_slots}
+        # ✅ Log available slots for debugging
+        print("Available Slots:", free_slots)
+
+        # ✅ Correctly format the response for Dialogflow CX
+        return {
+            "fulfillment_response": {
+                "messages": [
+                    {
+                        "text": {
+                            "text": [
+                                "Here are the available time slots:\n" + "\n".join(free_slots)
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
 
     except Exception as e:
-        return {"error": str(e)}
+        print(f"Error: {str(e)}")  # ✅ Log the error
+        return {
+            "fulfillment_response": {
+                "messages": [
+                    {"text": {"text": [f"Error fetching availability: {str(e)}"]}}
+                ]
+            }
+        }
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
     """Handles webhook requests and returns available slots."""
+    print("Webhook called!")  # ✅ Debugging log
     free_slots = get_free_slots()
     return jsonify(free_slots)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
   # ✅ This starts Flask when running the script
+
