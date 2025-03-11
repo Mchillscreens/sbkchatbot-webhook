@@ -1,9 +1,28 @@
+import os
+from flask import Flask, request, jsonify
+import requests
+import datetime
+from ics import Calendar
+import pytz
+
+app = Flask(__name__)  # ✅ Define the Flask app
+
+# ✅ Get port from environment variable (Render requires this)
+PORT = int(os.environ.get("PORT", 5000))
+
+# Your Jobber booking link
+BOOKING_URL = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
+
+# Your Jobber iCal URL
+ICAL_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics"
+
+
 def format_date_short(dt):
     """Formats datetime into 'MM/DD/YY' format for button text."""
     try:
-        return dt.strftime("%-m/%-d/%y")
+        return dt.strftime("%-m/%-d/%y")  # Unix/Linux/Mac
     except:
-        return dt.strftime("%#m/%#d/%y")
+        return dt.strftime("%#m/%#d/%y")  # Windows fallback
 
 
 def get_free_slots():
@@ -111,3 +130,16 @@ def get_free_slots():
                 ]
             }
         }
+
+
+@app.route("/get_availability", methods=["POST"])
+def get_availability():
+    """Handles webhook requests and returns available slots."""
+    print("Webhook called!")
+    free_slots = get_free_slots()
+    return jsonify(free_slots)
+
+
+# ✅ Ensure it binds to the correct host and port for Render deployment
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT)
