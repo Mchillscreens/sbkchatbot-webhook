@@ -25,11 +25,8 @@ def format_date_short(dt):
         return dt.strftime("%#m/%#d/%y")  # Windows fallback
 
 
-def get_free_slots():
-    """
-    Fetches and parses the Jobber iCal feed to find available time slots.
-    Returns dates as buttons and follows up with a question about screen count.
-    """
+def get_free_slots(screens_needed):
+    """Fetches and parses the Jobber iCal feed to find available time slots based on screens needed."""
     try:
         print("Fetching calendar data...")
 
@@ -49,50 +46,70 @@ def get_free_slots():
         now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
         end_of_week = now + datetime.timedelta(days=7)
 
-        busy_times = set()
+        # How much time we need in minutes (each screen needs 20 minutes)
+        time_needed_minutes = int(screens_needed) * 20
+        time_needed = datetime.timedelta(minutes=time_needed_minutes)
+
+        print(f"Time needed for {screens_needed} screens: {time_needed_minutes} minutes")
+
+        # Collect all events within the time window
+        events = []
         for event in calendar.events:
-            event_start = event.begin.datetime
-            event_end = event.end.datetime
+            start = event.begin.datetime.replace(tzinfo=pytz.utc)
+            end = event.end.datetime.replace(tzinfo=pytz.utc)
+            if now <= start <= end_of_week:
+                events.append((start, end))
 
-            if event_start.tzinfo is None:
-                event_start = event_start.replace(tzinfo=pytz.utc)
-            if event_end.tzinfo is None:
-                event_end = event_end.replace(tzinfo=pytz.utc)
+        # Sort events by start time
+        events.sort()
 
-            if now <= event_start <= end_of_week:
-                busy_times.add(event_start.date())
+        # Generate possible time slots
+        available_slots = []
+        search_start = now + datetime.timedelta(days=1)  # Start searching from tomorrow
+        search_end = end_of_week
 
-        free_slots = {}
+        # Add a dummy event to represent the end of the search period
+        events.append((search_end, search_end))
 
-        # Loop through the next 8 days, starting tomorrow
-        for day in range(8):
-            check_day = (now + datetime.timedelta(days=day)).date()
+        # Look for gaps between events
+        current_time = search_start
+        for event_start, event_end in events:
+            # Is there enough time between current_time and event_start?
+            if current_time + time_needed <= event_start:
+                # Slot found!
+                slot_date = format_date_short(current_time)
+                slot_time = current_time.strftime("%I:%M %p")
+                label = f"{slot_date} - {slot_time}"
+                available_slots.append({
+                    "text": label,
+                    "postback": BOOKING_URL  # You can customize this link with parameters if needed
+                })
 
-            # Skip today (same-day booking not allowed)
-            if check_day == now.date():
-                continue
+                # Move current_time forward by the job time (optional: or keep the same for multiple slots in the same gap)
+                current_time = current_time + time_needed
 
-            if check_day not in busy_times:
-                formatted_date = format_date_short(check_day)
+            # Move current time forward if needed
+            if current_time < event_end:
+                current_time = event_end
 
-                free_slots[check_day] = {
-                    "text": formatted_date,
-                    "postback": BOOKING_URL
-                }
+        # If no slots found
+        if not available_slots:
+            available_slots.append({
+                "text": "No suitable time slots found in the next 7 days.",
+                "postback": BOOKING_URL
+            })
 
-        buttons = list(free_slots.values())
-
-        # Add "See All Available" button
-        buttons.append({
+        # Add "See All Available" button at the end
+        available_slots.append({
             "text": "See All Available",
             "postback": BOOKING_URL
         })
 
-        print("Available Slots:", buttons)
+        print("Available Slots:", available_slots)
 
         # Build Rich Content JSON for Dialogflow CX
         rich_buttons = []
-        for slot in buttons:
+        for slot in available_slots:
             rich_buttons.append({
                 "type": "button",
                 "icon": {
@@ -103,7 +120,6 @@ def get_free_slots():
                 "link": slot['postback']
             })
 
-        # ✅ Add available dates (Rich Content) + follow-up question (Text)
         return {
             "fulfillment_response": {
                 "messages": [
@@ -113,18 +129,11 @@ def get_free_slots():
                                 [
                                     {
                                         "type": "list",
-                                        "title": "Select an available date:",
-                                        "subtitle": "Click a date below to book your appointment."
+                                        "title": f"Here are the best time slots for {screens_needed} screens:",
+                                        "subtitle": f"Each job requires about {time_needed_minutes} minutes."
                                     },
                                     *rich_buttons
                                 ]
-                            ]
-                        }
-                    },
-                    {
-                        "text": {
-                            "text": [
-                                "Although there are slots open on these days, I’ll need to know how big of a time slot you’ll need to better assist you. Approximately how many screens need service?"
                             ]
                         }
                     }
@@ -149,7 +158,15 @@ def get_availability():
     Handles webhook requests and returns available slots.
     """
     print("Webhook called!")
-    free_slots = get_free_slots()
+
+    # Get JSON data from Dialogflow
+    data = request.get_json(silent=True)
+    print("Request data:", data)
+
+    # Extract screens_needed from the request payload
+    screens_needed = data.get("sessionInfo", {}).get("parameters", {}).get("screens_needed", 1)
+
+    free_slots = get_free_slots(screens_needed)
     return jsonify(free_slots)
 
 
