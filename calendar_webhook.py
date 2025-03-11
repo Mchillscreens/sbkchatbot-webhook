@@ -5,9 +5,9 @@ import datetime
 from ics import Calendar
 import pytz
 
-app = Flask(__name__)  # ✅ Define the Flask app
+app = Flask(__name__)
 
-# ✅ Get port from environment variable (Render requires this)
+# Get port from environment variable (Render requires this)
 PORT = int(os.environ.get("PORT", 5000))
 
 # Your Jobber booking link
@@ -26,7 +26,10 @@ def format_date_short(dt):
 
 
 def get_free_slots():
-    """Fetches and parses the Jobber iCal feed to find available time slots."""
+    """
+    Fetches and parses the Jobber iCal feed to find available time slots.
+    Returns dates as buttons and follows up with a question about screen count.
+    """
     try:
         print("Fetching calendar data...")
 
@@ -61,11 +64,11 @@ def get_free_slots():
 
         free_slots = {}
 
-        # ✅ Loop through the next 8 days, starting tomorrow
-        for day in range(8):  
+        # Loop through the next 8 days, starting tomorrow
+        for day in range(8):
             check_day = (now + datetime.timedelta(days=day)).date()
 
-            # ✅ Skip today (same-day booking not allowed)
+            # Skip today (same-day booking not allowed)
             if check_day == now.date():
                 continue
 
@@ -79,7 +82,7 @@ def get_free_slots():
 
         buttons = list(free_slots.values())
 
-        # ✅ Add "See All Available" button
+        # Add "See All Available" button
         buttons.append({
             "text": "See All Available",
             "postback": BOOKING_URL
@@ -87,7 +90,7 @@ def get_free_slots():
 
         print("Available Slots:", buttons)
 
-        # ✅ Build Rich Content JSON for Dialogflow CX
+        # Build Rich Content JSON for Dialogflow CX
         rich_buttons = []
         for slot in buttons:
             rich_buttons.append({
@@ -100,6 +103,7 @@ def get_free_slots():
                 "link": slot['postback']
             })
 
+        # ✅ Add available dates (Rich Content) + follow-up question (Text)
         return {
             "fulfillment_response": {
                 "messages": [
@@ -114,6 +118,13 @@ def get_free_slots():
                                     },
                                     *rich_buttons
                                 ]
+                            ]
+                        }
+                    },
+                    {
+                        "text": {
+                            "text": [
+                                "Although there are slots open on these days, I’ll need to know how big of a time slot you’ll need to better assist you. Approximately how many screens need service?"
                             ]
                         }
                     }
@@ -134,12 +145,14 @@ def get_free_slots():
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
-    """Handles webhook requests and returns available slots."""
+    """
+    Handles webhook requests and returns available slots.
+    """
     print("Webhook called!")
     free_slots = get_free_slots()
     return jsonify(free_slots)
 
 
-# ✅ Ensure it binds to the correct host and port for Render deployment
+# Ensure it binds to the correct host and port for Render deployment
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT)
