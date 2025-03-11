@@ -1,3 +1,11 @@
+def format_date_short(dt):
+    """Formats datetime into 'MM/DD/YY' format for button text."""
+    try:
+        return dt.strftime("%-m/%-d/%y")
+    except:
+        return dt.strftime("%#m/%#d/%y")
+
+
 def get_free_slots():
     """Fetches and parses the Jobber iCal feed to find available time slots."""
     try:
