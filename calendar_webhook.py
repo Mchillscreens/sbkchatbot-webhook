@@ -16,7 +16,6 @@ BOOKING_URL = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6
 # Your Jobber iCal URL
 ICAL_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics"
 
-
 def format_date_short(dt):
     """Formats datetime into 'MM/DD/YY' format for button text."""
     try:
@@ -24,9 +23,8 @@ def format_date_short(dt):
     except:
         return dt.strftime("%#m/%#d/%y")  # Windows fallback
 
-
 def get_free_slots(screens_needed):
-    """Fetches and parses the Jobber iCal feed to find available time slots based on screens needed."""
+    """Fetch and parse the Jobber iCal feed to find available time slots based on screens needed."""
     try:
         print("Fetching calendar data...")
 
@@ -82,11 +80,11 @@ def get_free_slots(screens_needed):
                 label = f"{slot_date} - {slot_time}"
                 available_slots.append({
                     "text": label,
-                    "postback": BOOKING_URL  # You can customize this link with parameters if needed
+                    "postback": BOOKING_URL
                 })
 
-                # Move current_time forward by the job time (optional: or keep the same for multiple slots in the same gap)
-                current_time = current_time + time_needed
+                # Move current_time forward by the job time (optional: or keep the same for multiple slots)
+                current_time += time_needed
 
             # Move current time forward if needed
             if current_time < event_end:
@@ -142,7 +140,7 @@ def get_free_slots(screens_needed):
         }
 
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error in get_free_slots: {str(e)}")
         return {
             "fulfillment_response": {
                 "messages": [
@@ -150,7 +148,6 @@ def get_free_slots(screens_needed):
                 ]
             }
         }
-
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
@@ -164,12 +161,25 @@ def get_availability():
     print("Request data:", data)
 
     # Extract screens_needed from the request payload
-    screens_needed = data.get("sessionInfo", {}).get("parameters", {}).get("screens_needed", 1)
+    screens_needed = data.get("sessionInfo", {}).get("parameters", {}).get("screens_needed")
+
+    # Require screens_needed before proceeding
+    if not screens_needed:
+        print("No screen count provided. Prompting user...")
+        return {
+            "fulfillment_response": {
+                "messages": [
+                    {"text": {"text": [
+                        "I need to know how many screens need service to show you the best available time slots!"
+                    ]}}
+                ]
+            }
+        }
 
     free_slots = get_free_slots(screens_needed)
     return jsonify(free_slots)
 
-
 # Ensure it binds to the correct host and port for Render deployment
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PORT)
+
