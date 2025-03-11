@@ -33,23 +33,26 @@ def get_free_slots():
                 busy_times.add(event_start.date())
 
         free_slots = {}
-        previous_end = now
 
-        for day in range(8):
+        # ✅ Loop through the next 8 days, starting tomorrow
+        for day in range(8):  
             check_day = (now + datetime.timedelta(days=day)).date()
+
+            # ✅ Skip today (same-day booking not allowed)
+            if check_day == now.date():
+                continue
 
             if check_day not in busy_times:
                 formatted_date = format_date_short(check_day)
+
                 free_slots[check_day] = {
                     "text": formatted_date,
                     "postback": BOOKING_URL
                 }
 
-            previous_end += datetime.timedelta(days=1)
-
         buttons = list(free_slots.values())
 
-        # Add a "See All Available" button
+        # ✅ Add "See All Available" button
         buttons.append({
             "text": "See All Available",
             "postback": BOOKING_URL
@@ -57,7 +60,7 @@ def get_free_slots():
 
         print("Available Slots:", buttons)
 
-        # ✅ Build Rich Content JSON instead of plain text
+        # ✅ Build Rich Content JSON for Dialogflow CX
         rich_buttons = []
         for slot in buttons:
             rich_buttons.append({
