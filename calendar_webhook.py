@@ -1,24 +1,38 @@
+import os
+from flask import Flask, request, jsonify
+
+# Initialize Flask app BEFORE you use it
+app = Flask(__name__)
+
+# Get port from environment variable (Render requires this)
+PORT = int(os.environ.get("PORT", 5000))
+
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
     print("Webhook called!")
 
+    # Get JSON data from Dialogflow
     data = request.get_json(silent=True)
     print("Request data:", data)
 
+    # Extract screens_needed from the request payload
     screens_needed = data.get("sessionInfo", {}).get("parameters", {}).get("screens_needed")
     print(f"screens_needed: {screens_needed}")
 
+    # If no screen count, prompt again
     if not screens_needed:
+        print("No screen count provided. Prompting user again...")
         return jsonify({
             "fulfillment_response": {
                 "messages": [
                     {"text": {"text": [
-                        "How many screens need service?"
+                        "I need to know how many screens need service to show you the best available time slots!"
                     ]}}
                 ]
             }
         })
 
+    # Return a simple confirmation message
     return jsonify({
         "fulfillment_response": {
             "messages": [
@@ -28,3 +42,7 @@ def get_availability():
             ]
         }
     })
+
+# Run the app (binding to 0.0.0.0 for Render)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT)
