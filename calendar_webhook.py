@@ -7,6 +7,12 @@ app = Flask(__name__)
 # Get port from environment variable (Render requires this)
 PORT = int(os.environ.get("PORT", 5000))
 
+# Root endpoint to confirm the webhook is running
+@app.route("/", methods=["GET"])
+def home():
+    return "Webhook is alive!"
+
+# Webhook endpoint for Dialogflow CX
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
     print("Webhook called!")
@@ -37,12 +43,5 @@ def get_availability():
         "fulfillment_response": {
             "messages": [
                 {"text": {"text": [
-                    f"We have time slots for {screens_needed} screens. Ready to book?"
-                ]}}
-            ]
-        }
-    })
+ 
 
-# Run the app (binding to 0.0.0.0 for Render)
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT)
