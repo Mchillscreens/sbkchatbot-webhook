@@ -1,0 +1,92 @@
+{
+  "displayName": "Breezy Availability Clean",
+  "description": "Clean flow for availability checks with screen count input.",
+  "transitionRoutes": [
+    {
+      "intent": "Check Availability",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "Sure! How many screens will we be working on today?"
+              ]
+            }
+          }
+        ]
+      },
+      "targetPage": "Check Availability Page"
+    }
+  ],
+  "pages": [
+    {
+      "displayName": "Check Availability Page",
+      "entryFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "How many screens need service?"
+              ]
+            }
+          }
+        ]
+      },
+      "form": {
+        "parameters": [
+          {
+            "displayName": "screens_needed",
+            "entityType": "@sys.number",
+            "isRequired": true,
+            "fillBehavior": {
+              "initialPromptFulfillment": {
+                "messages": [
+                  {
+                    "text": {
+                      "text": [
+                        "Please tell me how many screens you need serviced."
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "transitionRoutes": [
+        {
+          "condition": "$page.params.status.screens_needed == 'FINAL'",
+          "triggerFulfillment": {
+            "webhook": "Jobber Availability",
+            "tag": "fetch_availability",
+            "messages": [
+              {
+                "text": {
+                  "text": [
+                    "Let me check available time slots for you..."
+                  ]
+                }
+              }
+            ]
+          },
+          "targetPage": "Waiting for Response Page"
+        }
+      ]
+    },
+    {
+      "displayName": "Waiting for Response Page",
+      "entryFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "Let me know if you need anything else or if you'd like to book one of those times!"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
