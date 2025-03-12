@@ -31,9 +31,13 @@ def get_availability():
         return jsonify({
             "fulfillment_response": {
                 "messages": [
-                    {"text": {"text": [
-                        "I need to know how many screens need service to show you the best available time slots!"
-                    ]}}
+                    {
+                        "text": {
+                            "text": [
+                                "I need to know how many screens need service to show you the best available time slots!"
+                            ]
+                        }
+                    }
                 ]
             }
         })
@@ -42,6 +46,17 @@ def get_availability():
     return jsonify({
         "fulfillment_response": {
             "messages": [
-                {"text": {"text": [
- 
+                {
+                    "text": {
+                        "text": [
+                            f"We have time slots for {screens_needed} screens. Ready to book?"
+                        ]
+                    }
+                }
+            ]
+        }
+    })
 
+# Run the app (binding to 0.0.0.0 for Render)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=PORT)
