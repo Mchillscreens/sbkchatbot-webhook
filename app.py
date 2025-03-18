@@ -10,21 +10,14 @@ def home():
 def get_availability():
     print("✅ Webhook called at /get_availability")
 
-    # Grab JSON from Dialogflow CX or Postman
     data = request.get_json(silent=True)
-    
-    # Debug prints to help troubleshoot
-    print("📦 Raw Request (request.data):", request.data)        # This prints the raw incoming data
-    print("📦 Parsed JSON (data):", data)                        # This prints what Flask parsed
 
-    # Extract screens_needed from parameters (only if data is not None)
     if data is None:
-        print("❗ No JSON data received. Check Content-Type header and request body format.")
         return jsonify({
             "fulfillment_response": {
                 "messages": [
                     {"text": {"text": [
-                        "❗ Error: No valid JSON data received. Please check the request format!"
+                        "❗ Error: No valid JSON data received."
                     ]}}
                 ]
             }
@@ -34,28 +27,50 @@ def get_availability():
     print(f"🖼️ screens_needed: {screens_needed}")
 
     if not screens_needed:
-        print("❗ No screen count provided. Prompting user again...")
         return jsonify({
             "fulfillment_response": {
                 "messages": [
                     {"text": {"text": [
-                        "I need to know how many screens need service to show you the best available time slots!"
+                        "How many screens do you need serviced?"
                     ]}}
                 ]
             }
         })
 
-    # Return available slots message
+    # Mocked time slots (you can make these dynamic later)
+    time_slots = [
+        "Tuesday, March 19th at 10:00 AM",
+        "Wednesday, March 20th at 2:00 PM",
+        "Thursday, March 21st at 9:00 AM"
+    ]
+
+    # Create suggestion chips with booking links (same link for now)
+    chips = {
+        "richContent": [
+            [
+                {
+                    "type": "chips",
+                    "options": [
+                        {
+                            "text": slot,
+                            "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
+                        } for slot in time_slots
+                    ]
+                }
+            ]
+        ]
+    }
+
     return jsonify({
         "fulfillment_response": {
             "messages": [
                 {"text": {"text": [
-                    f"✅ We have time slots for {screens_needed} screens. Ready to book?"
-                ]}}
+                    f"✅ We have openings for {screens_needed} screens! Pick a time below to book:"
+                ]}},
+                {"payload": chips}
             ]
         }
     })
 
 if __name__ == "__main__":
-    print("✅ Starting Flask App (with get_availability and debug)")
     app.run(debug=True, host="0.0.0.0", port=5000)
