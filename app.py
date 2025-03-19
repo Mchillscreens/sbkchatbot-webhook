@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 
 app = Flask(__name__)
 
@@ -12,7 +13,11 @@ def get_availability():
 
     data = request.get_json(silent=True)
 
+    print("📦 Raw Request (request.data):", request.data)
+    print("📦 Parsed JSON (data):", data)
+
     if data is None:
+        print("❗ No JSON data received.")
         return jsonify({
             "fulfillment_response": {
                 "messages": [
@@ -37,14 +42,12 @@ def get_availability():
             }
         })
 
-    # Mocked time slots (you can make these dynamic later)
     time_slots = [
         "Tuesday, March 19th at 10:00 AM",
         "Wednesday, March 20th at 2:00 PM",
         "Thursday, March 21st at 9:00 AM"
     ]
 
-    # Create suggestion chips with booking links (same link for now)
     chips = {
         "richContent": [
             [
@@ -73,4 +76,6 @@ def get_availability():
     })
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    print("✅ Starting Flask App")
+    port = int(os.environ.get("PORT", 5000))  # 🔥 THIS is the Render fix
+    app.run(debug=True, host="0.0.0.0", port=port)
