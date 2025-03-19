@@ -1,5 +1,6 @@
-flask
-requests
-ics
-pytz
+Flask==2.2.3
+requests==2.31.0
+ics==0.7
+pytz==2023.3
+gunicorn==20.1.0
 
