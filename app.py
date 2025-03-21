@@ -14,7 +14,8 @@ app = Flask(__name__)
 # Google Calendar API Setup
 # ==========================
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-SERVICE_ACCOUNT_FILE = 'breezy-calendar-interation-dab07558a5f0.json'  # <-- CHANGE THIS
+SERVICE_ACCOUNT_FILE = 'SERVICE_ACCOUNT_FILE = '/etc/secrets/breezy-calendar-interation-dab07558a5f0.json'
+'  # <-- CHANGE THIS
 CALENDAR_ID = 'c_39dbf363c487045db93009e4f1bcaf7209d9c6f18c820a09e4992adbd22b49e9@group.calendar.google.com'    # <-- CHANGE THIS
 
 # Load credentials from your Service Account JSON key file
