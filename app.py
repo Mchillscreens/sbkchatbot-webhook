@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify
 import os
 import datetime
-import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
@@ -14,15 +13,13 @@ app = Flask(__name__)
 # Google Calendar API Setup
 # ==========================
 SCOPES = ['https://www.googleapis.com/auth/calendar']
-SERVICE_ACCOUNT_FILE = '/etc/secrets/breezy-calendar-interation-dab07558a5f0.json'
- # <-- CHANGE THIS
-CALENDAR_ID = 'c_39dbf363c487045db93009e4f1bcaf7209d9c6f18c820a09e4992adbd22b49e9@group.calendar.google.com'    # <-- CHANGE THIS
+SERVICE_ACCOUNT_FILE = r'C:\Users\Mike\Documents\sbkchatbot\breezy-calendar-interation-dab07558a5f0.json'
+CALENDAR_ID = 'c_39dbf363c487045db93009e4f1bcaf7209d9c6f18c820a09e4992adbd22b49e9@group.calendar.google.com'
 
-# Load credentials from your Service Account JSON key file
 credentials = service_account.Credentials.from_service_account_file(
-    SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
 
-# Build the Google Calendar API service
 service = build('calendar', 'v3', credentials=credentials)
 
 # ==========================
@@ -41,35 +38,41 @@ def get_events(start_time, end_time):
     events = events_result.get('items', [])
     return events
 
-def find_open_slots(date):
-    # Define your working hours here
+def find_open_slots(date, slot_duration_minutes=60):
     work_start = datetime.datetime.combine(date, datetime.time(9, 0))  # 9 AM
     work_end = datetime.datetime.combine(date, datetime.time(17, 0))   # 5 PM
 
     events = get_events(work_start, work_end)
 
-    slots = []
-    current_time = work_start
-
+    busy_times = []
     for event in events:
         event_start = datetime.datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00'))
         event_end = datetime.datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
+        busy_times.append((event_start, event_end))
 
-        if current_time < event_start:
-            slots.append((current_time, event_start))
+    free_times = []
+    current_start = work_start
 
-        current_time = max(current_time, event_end)
+    for busy_start, busy_end in sorted(busy_times):
+        if current_start < busy_start:
+            free_times.append((current_start, busy_start))
+        current_start = max(current_start, busy_end)
 
-    if current_time < work_end:
-        slots.append((current_time, work_end))
+    if current_start < work_end:
+        free_times.append((current_start, work_end))
 
     available_slots = []
-    for start, end in slots:
-        available_slots.append({
-            'start': start.isoformat(),
-            'end': end.isoformat()
-        })
+    for free_start, free_end in free_times:
+        slot_start = free_start
+        while slot_start + datetime.timedelta(minutes=slot_duration_minutes) <= free_end:
+            slot_end = slot_start + datetime.timedelta(minutes=slot_duration_minutes)
+            available_slots.append({
+                'start': slot_start.isoformat(),
+                'end': slot_end.isoformat()
+            })
+            slot_start = slot_end
 
+    print(f"DEBUG: Found {len(available_slots)} slots on {date} (min {slot_duration_minutes} mins)")
     return available_slots
 
 # ==========================
@@ -85,69 +88,56 @@ def get_availability():
     print("✅ Webhook called at /get_availability")
 
     data = request.get_json(silent=True)
-
-    print("📦 Raw Request (request.data):", request.data)
-    print("📦 Parsed JSON (data):", data)
+    print("📦 Raw Request:", data)
 
     if data is None:
-        print("❗ No JSON data received.")
         return jsonify({
             "fulfillment_response": {
                 "messages": [
-                    {"text": {"text": [
-                        "❗ Error: No valid JSON data received."
-                    ]}}
+                    {"text": {"text": ["❗ Error: No JSON data received."]}}
                 ]
             }
         }), 200
 
-    # Step 1: Get number of screens requested
     screens_needed = data.get("sessionInfo", {}).get("parameters", {}).get("screens_needed")
+    appointment_date_str = data.get("sessionInfo", {}).get("parameters", {}).get("appointment-date")
+
     print(f"🖼️ screens_needed: {screens_needed}")
+    print(f"📅 appointment_date_str: {appointment_date_str}")
 
     if not screens_needed:
         return jsonify({
             "fulfillment_response": {
                 "messages": [
-                    {"text": {"text": [
-                        "How many screens do you need serviced?"
-                    ]}}
+                    {"text": {"text": ["How many screens do you need serviced?"]}}
                 ]
             }
         }), 200
 
-    # Step 2: Get the requested appointment date
-    appointment_date_str = data.get("sessionInfo", {}).get("parameters", {}).get("appointment-date")
-
     if not appointment_date_str:
-        appointment_date_str = datetime.date.today().isoformat()  # Default to today if no date
+        appointment_date_str = datetime.date.today().isoformat()
 
     appointment_date = datetime.datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
-
-    # Step 3: Find available slots on the requested date
     slots = find_open_slots(appointment_date)
 
-    # Step 4: If no slots, find next available date
-    if not slots:
-        print(f"❌ No slots found on {appointment_date_str}.")
+    booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
 
+    if not slots:
         next_date = None
         next_slots = []
-        for days_ahead in range(1, 15):  # Look 14 days ahead
+
+        for days_ahead in range(1, 15):
             new_date = appointment_date + datetime.timedelta(days=days_ahead)
             potential_slots = find_open_slots(new_date)
 
             if potential_slots:
                 next_date = new_date
                 next_slots = potential_slots
-                print(f"✅ Found next available date: {next_date}")
                 break
-
-        booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
 
         if next_date:
             suggested_slots = []
-            for slot in next_slots[:3]:  # Offer top 3 slots
+            for slot in next_slots[:3]:
                 start_time = slot['start'][11:16]
                 suggested_slots.append(f"{next_date.strftime('%A, %B %d')} at {start_time}")
 
@@ -157,19 +147,9 @@ def get_availability():
                         {
                             "type": "chips",
                             "options": [
-                                {
-                                    "text": slot,
-                                    "link": booking_link
-                                } for slot in suggested_slots
-                            ]
-                        },
-                        {
-                            "type": "chips",
-                            "options": [
-                                {
-                                    "text": "See Full Booking Calendar",
-                                    "link": booking_link
-                                }
+                                {"text": slot, "link": booking_link} for slot in suggested_slots
+                            ] + [
+                                {"text": "See Full Booking Calendar", "link": booking_link}
                             ]
                         }
                     ]
@@ -179,20 +159,12 @@ def get_availability():
             return jsonify({
                 "fulfillment_response": {
                     "messages": [
-                        {"text": {"text": [
-                            f"❌ Sorry, no times available on {appointment_date.strftime('%A, %B %d')}."
-                        ]}},
-                        {"text": {"text": [
-                            f"✅ But good news! We have openings on {next_date.strftime('%A, %B %d')}. Pick a time below to book:"
-                        ]}},
-                        {"text": {"text": [
-                            "⚠️ Heads up! If you book through the site, Breezy won’t be able to help from there—but we’ll take care of you once you're booked!"
-                        ]}},
+                        {"text": {"text": [f"❌ No times available on {appointment_date.strftime('%A, %B %d')}"]}},
+                        {"text": {"text": [f"✅ Next openings on {next_date.strftime('%A, %B %d')}. Pick a time:"]}},
                         {"payload": chips}
                     ]
                 }
             }), 200
-
         else:
             chips = {
                 "richContent": [
@@ -200,10 +172,7 @@ def get_availability():
                         {
                             "type": "chips",
                             "options": [
-                                {
-                                    "text": "See Full Booking Calendar",
-                                    "link": booking_link
-                                }
+                                {"text": "See Full Booking Calendar", "link": booking_link}
                             ]
                         }
                     ]
@@ -213,27 +182,23 @@ def get_availability():
             return jsonify({
                 "fulfillment_response": {
                     "messages": [
-                        {"text": {"text": [
-                            f"❌ Sorry, no available times on {appointment_date.strftime('%A, %B %d')} or in the next 2 weeks."
-                        ]}},
-                        {"text": {"text": [
-                            "You can check out our full booking calendar below:"
-                        ]}},
-                        {"text": {"text": [
-                            "⚠️ Heads up! If you book through the site, Breezy won’t be able to help from there—but we’ll take care of you once you're booked!"
-                        ]}},
+                        {"text": {"text": [f"❌ No times on {appointment_date.strftime('%A, %B %d')} or in the next 2 weeks."]}},
                         {"payload": chips}
                     ]
                 }
             }), 200
 
-    # Step 5: If slots are available on the requested date
-    print(f"✅ Found {len(slots)} slots on {appointment_date_str}.")
+    print(f"✅ Found {len(slots)} slots on {appointment_date_str}")
 
-    time_slots = []
-    for slot in slots[:3]:
+    formatted_slots = []
+    for slot in slots:
         start_time = slot['start'][11:16]
-        time_slots.append(f"{appointment_date.strftime('%A, %B %d')} at {start_time}")
+        formatted_slots.append(f"{appointment_date.strftime('%A, %B %d')} at {start_time}")
+
+    first_slot = formatted_slots[0]
+    next_slots = formatted_slots[1:4]
+
+    first_slot_message = f"✅ We have an opening for {first_slot}! Does this time work, or would you like to see more options?"
 
     chips = {
         "richContent": [
@@ -241,19 +206,9 @@ def get_availability():
                 {
                     "type": "chips",
                     "options": [
-                        {
-                            "text": slot,
-                            "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
-                        } for slot in time_slots
-                    ]
-                },
-                {
-                    "type": "chips",
-                    "options": [
-                        {
-                            "text": "See Full Booking Calendar",
-                            "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
-                        }
+                        {"text": slot, "link": booking_link} for slot in next_slots
+                    ] + [
+                        {"text": "See Full Booking Calendar", "link": booking_link}
                     ]
                 }
             ]
@@ -263,9 +218,7 @@ def get_availability():
     return jsonify({
         "fulfillment_response": {
             "messages": [
-                {"text": {"text": [
-                    f"✅ We have openings for {screens_needed} screens! Pick a time below to book on {appointment_date.strftime('%A, %B %d')}!"
-                ]}},
+                {"text": {"text": [first_slot_message]}},
                 {"payload": chips}
             ]
         }
