@@ -67,16 +67,19 @@ def home():
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
+    print("✅ Webhook called at /get_availability")
+
     data = request.get_json(silent=True)
     tag = data.get("fulfillmentInfo", {}).get("tag")
-
     parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
-    appointment_date_str = parameters.get("appointment-date")
+    appointment_date_str = parameters.get("appointment_date")
+    showing_more_slots = parameters.get("showing_more_slots", False)
+
     if not appointment_date_str:
         appointment_date_str = datetime.date.today().isoformat()
-    appointment_date = datetime.datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
 
+    appointment_date = datetime.datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
     slots = find_open_slots(appointment_date)
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
 
@@ -85,17 +88,16 @@ def get_availability():
         for slot in slots
     ]
 
-    # ------------------------
-    # Response to see more slots
-    # ------------------------
-    if tag == "get_more_slots":
+    # If user clicked "See more options"
+    if tag == "get_more_slots" or showing_more_slots:
+        print("🔁 Showing more slot options (without repeating full flow)")
         chips = {
             "richContent": [[
                 {
                     "type": "chips",
                     "options": [
                         {"text": slot, "link": booking_link}
-                        for slot in formatted_slots[1:4]  # next 3 options
+                        for slot in formatted_slots[1:4]
                     ] + [
                         {"text": "See Full Booking Calendar", "link": booking_link}
                     ]
@@ -110,6 +112,49 @@ def get_availability():
                 ]
             }
         }), 200
+
+    # If no slots found
+    if not slots:
+        return jsonify({
+            "fulfillment_response": {
+                "messages": [
+                    {"text": {"text": ["❌ No available times found."]}},
+                    {"payload": {
+                        "richContent": [[
+                            {"type": "chips", "options": [
+                                {"text": "See Full Booking Calendar", "link": booking_link}
+                            ]}
+                        ]]
+                    }}
+                ]
+            }
+        }), 200
+
+    # Normal response — first slot + follow up
+    first_slot = formatted_slots[0]
+    chips = {
+        "richContent": [[
+            {
+                "type": "chips",
+                "options": [
+                    {"text": "Yes, that time works"},
+                    {"text": "See more options"}
+                ]
+            }
+        ]]
+    }
+
+    return jsonify({
+        "fulfillment_response": {
+            "messages": [
+                {"text": {"text": [
+                    f"✅ We have an opening for {first_slot}! Does this time work, or would you like to see more options?"
+                ]}},
+                {"payload": chips}
+            ]
+        }
+    }), 200
+
 
     # ------------------------
     # Default response (first slot only)
