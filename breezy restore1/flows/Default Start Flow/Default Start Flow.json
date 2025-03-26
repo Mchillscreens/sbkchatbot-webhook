@@ -1,0 +1,124 @@
+{
+  "displayName": "Default Start Flow",
+  "startPage": "Start Page",
+  "pages": [
+    {
+      "displayName": "Start Page",
+      "transitionRoutes": [
+        {
+          "intent": "request_appointment_availability",
+          "targetPage": "collect_appointment_details",
+          "triggerFulfillment": {
+            "messages": [
+              {
+                "text": {
+                  "text": [
+                    "Hang tight while I check our real-time availability!"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "displayName": "collect_appointment_details",
+      "form": {
+        "parameters": [
+          {
+            "displayName": "screens_needed",
+            "entityType": "@screen_count",
+            "required": true,
+            "fillBehavior": {
+              "initialPromptFulfillment": {
+                "messages": [
+                  {
+                    "text": {
+                      "text": ["How many screens do you need serviced?"]
+                    }
+                  }
+                ]
+              },
+              "repromptEventHandlers": [
+                {
+                  "event": "sys.no-match-1",
+                  "triggerFulfillment": {
+                    "messages": [
+                      {
+                        "text": {
+                          "text": [
+                            "Sorry, I didn't catch that. How many screens do you need serviced? Please reply with a number like 3 or 4."
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "displayName": "appointment_date",
+            "entityType": "@sys.date",
+            "required": true,
+            "fillBehavior": {
+              "initialPromptFulfillment": {
+                "messages": [
+                  {
+                    "text": {
+                      "text": ["What day works best for your appointment?"]
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "transitionRoutes": [
+        {
+          "condition": "$page.params.status = \"FINAL\"",
+          "triggerFulfillment": {
+            "messages": [
+              {
+                "text": {
+                  "text": [
+                    "Great! Let me check real-time availability for your $session.params.screens_needed screens on $session.params.appointment_date."
+                  ]
+                }
+              }
+            ],
+            "webhook": "Get availability Webhook",
+            "tag": "availability"
+          }
+        },
+        {
+          "intent": "availability_more",
+          "triggerFulfillment": {
+            "webhook": "Get availability Webhook",
+            "tag": "get_more_slots"
+          }
+        },
+        {
+          "intent": "availability_yes",
+          "targetPage": "booking_confirmation"
+        }
+      ]
+    },
+    {
+      "displayName": "booking_confirmation",
+      "entryFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "Awesome! I'll block that time off for you next. (This feature coming soon!)"
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

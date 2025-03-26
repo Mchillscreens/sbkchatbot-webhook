@@ -1,0 +1,11 @@
+{
+  "name": "de124df6-28e7-4545-bb3b-4a7464dd73a3",
+  "displayName": "request_appointment_availability",
+  "parameters": [ {
+    "id": "number",
+    "entityType": "@sys.number"
+  } ],
+  "priority": 500000,
+  "description": "Triggered when users are looking for available appointment times or slots to book an appointment",
+  "numTrainingPhrases": 16
+}

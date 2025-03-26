@@ -1,0 +1,56 @@
+{
+  "name": "b0c8739d-bb40-4607-b2af-ba7615ebfeee",
+  "displayName": "request_appontment_availabilty_page",
+  "form": {
+    "parameters": [ {
+      "displayName": "screens_needed",
+      "required": true,
+      "entityType": "@sys.number",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+        
+        }
+      }
+    }, {
+      "displayName": "appointment_date",
+      "required": true,
+      "entityType": "@sys.date",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+          "messages": [ {
+            "text": {
+              "text": [ "What day would you like to schedule your appointment?\r\n" ]
+            },
+            "languageCode": "en"
+          } ],
+          "advancedSettings": {
+            "playbackInterruptionSettings": {
+            
+            },
+            "dtmfSettings": {
+              "useSystemEntityRule": false
+            }
+          }
+        }
+      }
+    } ]
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Checking your appointment availability now...\r\n" ]
+      },
+      "languageCode": "en"
+    } ],
+    "webhook": "Get availability Webhook",
+    "tag": "availability",
+    "advancedSettings": {
+      "playbackInterruptionSettings": {
+      
+      },
+      "dtmfSettings": {
+        "useSystemEntityRule": false
+      }
+    }
+  }
+}

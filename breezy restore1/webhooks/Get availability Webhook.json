@@ -1,0 +1,11 @@
+{
+  "name": "bb054027-ddb8-48d8-bd64-873e1809d375",
+  "displayName": "Get availability Webhook",
+  "genericWebService": {
+    "uri": "https://sbkchatbot-webhook-2.onrender.com/get_availability",
+    "webhookType": "STANDARD"
+  },
+  "timeout": {
+    "seconds": 5
+  }
+}

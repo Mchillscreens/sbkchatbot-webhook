@@ -1,0 +1,123 @@
+{
+  "name": "5d39f025-b424-4c59-871f-b7da610e73f4",
+  "displayName": "collect_appointment_details",
+  "form": {
+    "parameters": [
+      {
+        "displayName": "screens_needed",
+        "required": true,
+        "entityType": "@screen_count",
+        "fillBehavior": {
+          "initialPromptFulfillment": {
+            "messages": [
+              {
+                "text": {
+                  "text": ["How many screens do you need serviced?"]
+                },
+                "languageCode": "en"
+              }
+            ]
+          },
+          "repromptEventHandlers": [
+            {
+              "event": "sys.no-match-1",
+              "triggerFulfillment": {
+                "messages": [
+                  {
+                    "text": {
+                      "text": [
+                        "Sorry, I didn't catch that. How many screens do you need serviced? Please reply with a number like 3 or 4."
+                      ]
+                    },
+                    "languageCode": "en"
+                  }
+                ]
+              },
+              "name": "47b18486-1fad-4fad-9e21-e37f361a3ef3"
+            }
+          ]
+        }
+      },
+      {
+        "displayName": "appointment_date",
+        "required": true,
+        "entityType": "@sys.date",
+        "fillBehavior": {
+          "initialPromptFulfillment": {
+            "messages": [
+              {
+                "text": {
+                  "text": ["What day works best for your appointment?"]
+                },
+                "languageCode": "en"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "displayName": "showing_more_slots",
+        "entityType": "@sys.any",
+        "required": false
+      }
+    ]
+  },
+  "entryFulfillment": {
+    "setParameterActions": [
+      {
+        "parameter": "showing_more_slots",
+        "value": "false"
+      }
+    ]
+  },
+  "transitionRoutes": [
+    {
+      "intent": "availability_yes",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": ["Awesome! I'll block that time off for you next. (This feature coming soon!)"]
+            },
+            "languageCode": "en"
+          }
+        ]
+      },
+      "targetPage": "End Session",
+      "name": "exit_after_yes"
+    },
+    {
+      "intent": "availability_more",
+      "condition": "not($session.params.showing_more_slots)",
+      "triggerFulfillment": {
+        "setParameterActions": [
+          {
+            "parameter": "showing_more_slots",
+            "value": "true"
+          }
+        ],
+        "webhook": "Get availability Webhook",
+        "tag": "get_more_slots"
+      },
+      "name": "show_more_slots_once"
+    },
+    {
+      "condition": "$page.params.status = \"FINAL\" and not($session.params.showing_more_slots)",
+      "triggerFulfillment": {
+        "messages": [
+          {
+            "text": {
+              "text": [
+                "Great! Let me check real-time availability for your $session.params.screens_needed screens on $session.params.appointment_date."
+              ]
+            },
+            "languageCode": "en"
+          }
+        ],
+        "webhook": "Get availability Webhook",
+        "tag": "availability"
+      },
+      "name": "e62d8701-6f7f-495d-806b-9f13f0942046"
+    }
+  ]
+}

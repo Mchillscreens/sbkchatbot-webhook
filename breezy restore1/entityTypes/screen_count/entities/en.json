@@ -1,0 +1,43 @@
+{
+  "entities": [ {
+    "value": "10 screens",
+    "synonyms": [ "10 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "9 screens",
+    "synonyms": [ "9 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "8 screens",
+    "synonyms": [ "8 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "7 screens",
+    "synonyms": [ "7 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "6 screens",
+    "synonyms": [ "6 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "5 screens",
+    "synonyms": [ "5 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "4 screens",
+    "synonyms": [ "4", "4 screens", "four", "4 screen" ],
+    "languageCode": "en"
+  }, {
+    "value": "3 screens",
+    "synonyms": [ "3 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "2 screens",
+    "synonyms": [ "2 screens" ],
+    "languageCode": "en"
+  }, {
+    "value": "1 screen",
+    "synonyms": [ "1 screen" ],
+    "languageCode": "en"
+  } ]
+}
