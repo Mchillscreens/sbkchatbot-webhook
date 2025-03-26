@@ -73,11 +73,14 @@ def get_availability():
     tag = data.get("fulfillmentInfo", {}).get("tag")
     parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
-    appointment_date_str = parameters.get("appointment_date")
+    appointment_date_param = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    if not appointment_date_str:
-        appointment_date_str = datetime.date.today().isoformat()
+    # Fix: extract date string if it's a dict
+    if isinstance(appointment_date_param, dict) and "date" in appointment_date_param:
+        appointment_date_str = appointment_date_param["date"]
+    else:
+        appointment_date_str = appointment_date_param or datetime.date.today().isoformat()
 
     appointment_date = datetime.datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
     slots = find_open_slots(appointment_date)
@@ -88,7 +91,7 @@ def get_availability():
         for slot in slots
     ]
 
-    # If user clicked "See more options"
+    # User clicked "See more options"
     if tag == "get_more_slots" or showing_more_slots:
         print("🔁 Showing more slot options (without repeating full flow)")
         chips = {
@@ -113,7 +116,7 @@ def get_availability():
             }
         }), 200
 
-    # If no slots found
+    # No slots found
     if not slots:
         return jsonify({
             "fulfillment_response": {
@@ -130,52 +133,7 @@ def get_availability():
             }
         }), 200
 
-    # Normal response — first slot + follow up
-    first_slot = formatted_slots[0]
-    chips = {
-        "richContent": [[
-            {
-                "type": "chips",
-                "options": [
-                    {"text": "Yes, that time works"},
-                    {"text": "See more options"}
-                ]
-            }
-        ]]
-    }
-
-    return jsonify({
-        "fulfillment_response": {
-            "messages": [
-                {"text": {"text": [
-                    f"✅ We have an opening for {first_slot}! Does this time work, or would you like to see more options?"
-                ]}},
-                {"payload": chips}
-            ]
-        }
-    }), 200
-
-
-    # ------------------------
-    # Default response (first slot only)
-    # ------------------------
-    if not slots:
-        return jsonify({
-            "fulfillment_response": {
-                "messages": [
-                    {"text": {"text": ["❌ Sorry, no available times on that day."]}},
-                    {"text": {"text": ["You can check our full booking calendar:"]}},
-                    {"payload": {
-                        "richContent": [[
-                            {"type": "chips", "options": [
-                                {"text": "See Full Booking Calendar", "link": booking_link}
-                            ]}
-                        ]]
-                    }}
-                ]
-            }
-        }), 200
-
+    # Standard response
     first_slot = formatted_slots[0]
     chips = {
         "richContent": [[
