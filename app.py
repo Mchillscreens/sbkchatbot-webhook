@@ -73,16 +73,23 @@ def get_availability():
     tag = data.get("fulfillmentInfo", {}).get("tag")
     parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
-    appointment_date_param = parameters.get("appointment_date")
+    appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # Fix: extract date string if it's a dict
-    if isinstance(appointment_date_param, dict) and "date" in appointment_date_param:
-        appointment_date_str = appointment_date_param["date"]
+    # 📅 Parse appointment_date (handle string or dict)
+    if isinstance(appointment_date_raw, str):
+        appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
+    elif isinstance(appointment_date_raw, dict):
+        appointment_date = datetime.date(
+            appointment_date_raw.get("year", 2025),
+            appointment_date_raw.get("month", 1),
+            appointment_date_raw.get("day", 1)
+        )
     else:
-        appointment_date_str = appointment_date_param or datetime.date.today().isoformat()
+        appointment_date = datetime.date.today()
 
-    appointment_date = datetime.datetime.strptime(appointment_date_str, '%Y-%m-%d').date()
+    print(f"🗓️ Parsed appointment date: {appointment_date}")
+
     slots = find_open_slots(appointment_date)
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
 
@@ -91,9 +98,8 @@ def get_availability():
         for slot in slots
     ]
 
-    # User clicked "See more options"
     if tag == "get_more_slots" or showing_more_slots:
-        print("🔁 Showing more slot options (without repeating full flow)")
+        print("🔁 Showing more slot options")
         chips = {
             "richContent": [[
                 {
@@ -116,7 +122,7 @@ def get_availability():
             }
         }), 200
 
-    # No slots found
+    # Default no-slots fallback
     if not slots:
         return jsonify({
             "fulfillment_response": {
@@ -133,7 +139,6 @@ def get_availability():
             }
         }), 200
 
-    # Standard response
     first_slot = formatted_slots[0]
     chips = {
         "richContent": [[
