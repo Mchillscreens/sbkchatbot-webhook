@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 import os
 import datetime
@@ -77,14 +76,14 @@ def get_availability():
     appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # Parse date
+    # ✅ Fixed: Parse date safely with int()
     if isinstance(appointment_date_raw, str):
         appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
     elif isinstance(appointment_date_raw, dict):
         appointment_date = datetime.date(
-            appointment_date_raw.get("year", 2025),
-            appointment_date_raw.get("month", 1),
-            appointment_date_raw.get("day", 1)
+            int(appointment_date_raw.get("year", 2025)),
+            int(appointment_date_raw.get("month", 1)),
+            int(appointment_date_raw.get("day", 1))
         )
     else:
         appointment_date = datetime.date.today()
