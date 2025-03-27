@@ -76,7 +76,6 @@ def get_availability():
     appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # ✅ Fixed: Parse date safely with int()
     if isinstance(appointment_date_raw, str):
         appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
     elif isinstance(appointment_date_raw, dict):
@@ -116,7 +115,8 @@ def get_availability():
         return jsonify({
             "sessionInfo": {
                 "parameters": {
-                    "showing_more_slots": False  # Reset after showing
+                    "showing_more_slots": False,
+                    "booking_flow_completed": True
                 }
             },
             "fulfillment_response": {
@@ -136,42 +136,3 @@ def get_availability():
                         "richContent": [[
                             {"type": "chips", "options": [
                                 {"text": "See Full Booking Calendar", "link": booking_link}
-                            ]}
-                        ]]
-                    }}
-                ]
-            }
-        }), 200
-
-    first_slot = formatted_slots[0]
-    chips = {
-        "richContent": [[
-            {
-                "type": "chips",
-                "options": [
-                    {"text": "Yes, that time works"},
-                    {"text": "See more options"}
-                ]
-            }
-        ]]
-    }
-
-    return jsonify({
-        "sessionInfo": {
-            "parameters": {
-                "showing_more_slots": False
-            }
-        },
-        "fulfillment_response": {
-            "messages": [
-                {"text": {"text": [
-                    f"✅ We have an opening for {first_slot}! Does this time work, or would you like to see more options?"
-                ]}},
-                {"payload": chips}
-            ]
-        }
-    }), 200
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
