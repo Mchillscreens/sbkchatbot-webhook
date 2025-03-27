@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 import os
 import datetime
@@ -13,6 +14,7 @@ CALENDAR_ID = 'c_39dbf363c487045db93009e4f1bcaf7209d9c6f18c820a09e4992adbd22b49e
 credentials = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES
 )
+
 service = build('calendar', 'v3', credentials=credentials)
 
 def get_events(start_time, end_time):
@@ -67,29 +69,24 @@ def home():
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
     print("✅ Webhook called at /get_availability")
+
     data = request.get_json(silent=True)
     tag = data.get("fulfillmentInfo", {}).get("tag")
     parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
+    appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # Parse date from either string or dict format
-    appointment_date_raw = parameters.get("appointment_date")
-    appointment_date = None
-
-    try:
-        if isinstance(appointment_date_raw, str):
-            appointment_date = datetime.datetime.strptime(appointment_date_raw, "%Y-%m-%d").date()
-        elif isinstance(appointment_date_raw, dict):
-            y = appointment_date_raw.get("year")
-            m = appointment_date_raw.get("month")
-            d = appointment_date_raw.get("day")
-            if all(isinstance(x, int) for x in [y, m, d]):
-                appointment_date = datetime.date(y, m, d)
-    except Exception as e:
-        print(f"⚠️ Error parsing date: {e}")
-
-    if not appointment_date:
+    # Parse date
+    if isinstance(appointment_date_raw, str):
+        appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
+    elif isinstance(appointment_date_raw, dict):
+        appointment_date = datetime.date(
+            appointment_date_raw.get("year", 2025),
+            appointment_date_raw.get("month", 1),
+            appointment_date_raw.get("day", 1)
+        )
+    else:
         appointment_date = datetime.date.today()
 
     print(f"🗓️ Parsed appointment date: {appointment_date}")
@@ -118,6 +115,11 @@ def get_availability():
             ]]
         }
         return jsonify({
+            "sessionInfo": {
+                "parameters": {
+                    "showing_more_slots": False  # Reset after showing
+                }
+            },
             "fulfillment_response": {
                 "messages": [
                     {"text": {"text": ["Here are a few more times you can book:"]}},
@@ -156,6 +158,11 @@ def get_availability():
     }
 
     return jsonify({
+        "sessionInfo": {
+            "parameters": {
+                "showing_more_slots": False
+            }
+        },
         "fulfillment_response": {
             "messages": [
                 {"text": {"text": [
