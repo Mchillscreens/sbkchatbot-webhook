@@ -180,3 +180,34 @@ def get_availability():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
+import requests  # make sure this is at the top if not already
+
+@app.route("/send_to_zapier", methods=["POST"])
+def send_to_zapier():
+    data = request.get_json(silent=True)
+    params = data.get("sessionInfo", {}).get("parameters", {})
+
+    payload = {
+        "name": params.get("user_name"),
+        "email": params.get("user_email"),
+        "phone": params.get("user_phone"),
+        "appointment_date": params.get("appointment_date"),
+        "screens_needed": params.get("screens_needed")
+    }
+
+    zapier_url = "https://hooks.zapier.com/hooks/catch/22255277/2c28k46/"
+    response = requests.post(zapier_url, json=payload)
+
+    return jsonify({
+        "fulfillment_response": {
+            "messages": [
+                {
+                    "text": {
+                        "text": [
+                            "✅ I’ve sent your booking details — you’re all set!"
+                        ]
+                    }
+                }
+            ]
+        }
+    }), 200
