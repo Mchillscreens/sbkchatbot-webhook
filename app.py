@@ -125,8 +125,7 @@ def get_availability():
                     {"text": {"text": ["Here are a few more times you can book:"]}},
                     {"payload": chips}
                 ]
-            },
-            "targetPage": "projects/screenchat-452617/locations/global/agents/9b706979-1735-4e7b-bff2-57d16363f60f/flows/00000000-0000-0000-0000-000000000000/pages/done_showing_more"
+            }
         }), 200
 
     if not slots:
