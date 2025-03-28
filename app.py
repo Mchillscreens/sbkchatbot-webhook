@@ -163,7 +163,8 @@ def get_availability():
     return jsonify({
         "sessionInfo": {
             "parameters": {
-                "showing_more_slots": False
+                "showing_more_slots": False,
+                "booking_flow_completed": True
             }
         },
         "fulfillment_response": {
