@@ -204,10 +204,16 @@ def send_to_zapier():
                 {
                     "text": {
                         "text": [
-                            "✅ I’ve sent your booking details — you’re all set!"
+                            "✅ I’ve sent your booking details — you’re all set! We'll follow up soon to confirm your appointment."
                         ]
                     }
                 }
             ]
+        },
+        "sessionInfo": {
+            "parameters": {
+                "booking_flow_completed": True,
+                "showing_more_slots": False
+            }
         }
     }), 200
