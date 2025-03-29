@@ -185,6 +185,9 @@ import requests  # make sure this is at the top if not already
 @app.route("/send_to_zapier", methods=["POST"])
 def send_to_zapier():
     data = request.get_json(silent=True)
+    print("📨 /send_to_zapier was called")
+    print("Incoming data:", data)
+
     params = data.get("sessionInfo", {}).get("parameters", {})
 
     payload = {
@@ -196,7 +199,12 @@ def send_to_zapier():
     }
 
     zapier_url = "https://hooks.zapier.com/hooks/catch/22255277/2c28k46/"
-    response = requests.post(zapier_url, json=payload)
+    try:
+        zapier_response = requests.post(zapier_url, json=payload, timeout=5)
+        print("📤 Sent to Zapier. Status:", zapier_response.status_code)
+        print("🔁 Zapier Response:", zapier_response.text)
+    except Exception as e:
+        print("❌ Error sending to Zapier:", str(e))
 
     return jsonify({
         "fulfillment_response": {
