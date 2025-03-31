@@ -18,17 +18,23 @@ credentials = service_account.Credentials.from_service_account_file(
 service = build('calendar', 'v3', credentials=credentials)
 
 def get_events(start_time, end_time):
+    # Localize to PST if not already timezone-aware
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-8)))
+    if end_time.tzinfo is None:
+        end_time = end_time.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-8)))
+
     events_result = service.events().list(
         calendarId=CALENDAR_ID,
-        timeMin=start_time.isoformat() + 'Z',
-        timeMax=end_time.isoformat() + 'Z',
+        timeMin=start_time.isoformat(),
+        timeMax=end_time.isoformat(),
         singleEvents=True,
         orderBy='startTime'
     ).execute()
     return events_result.get('items', [])
 
 def find_open_slots(date, slot_duration_minutes=60):
-    work_start = datetime.datetime.combine(date, datetime.time(9, 0))
+    work_start = datetime.datetime.combine(date, datetime.time(8, 0))  # 🕗 now starts at 8 AM
     work_end = datetime.datetime.combine(date, datetime.time(17, 0))
     events = get_events(work_start, work_end)
 
