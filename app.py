@@ -20,8 +20,15 @@ service = build('calendar', 'v3', credentials=credentials)
 pacific = pytz.timezone("America/Los_Angeles")
 
 def get_events(start_time, end_time):
-    start_time = pacific.localize(start_time)
-    end_time = pacific.localize(end_time)
+    if start_time.tzinfo is None:
+        start_time = pacific.localize(start_time)
+    else:
+        start_time = start_time.astimezone(pacific)
+
+    if end_time.tzinfo is None:
+        end_time = pacific.localize(end_time)
+    else:
+        end_time = end_time.astimezone(pacific)
 
     events_result = service.events().list(
         calendarId=CALENDAR_ID,
