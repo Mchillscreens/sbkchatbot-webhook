@@ -40,8 +40,8 @@ def get_events(start_time, end_time):
     return events_result.get('items', [])
 
 def find_open_slots(date, slot_duration_minutes=60):
-    work_start = datetime.datetime.combine(date, datetime.time(8, 0))
-    work_end = datetime.datetime.combine(date, datetime.time(17, 0))
+    work_start = pacific.localize(datetime.datetime.combine(date, datetime.time(8, 0)))
+    work_end = pacific.localize(datetime.datetime.combine(date, datetime.time(17, 0)))
     events = get_events(work_start, work_end)
 
     busy_times = [
@@ -93,7 +93,6 @@ def get_availability():
     if isinstance(appointment_date_raw, str):
         print(f"🧪 Raw appointment string: {appointment_date_raw}")
         try:
-            # Parse only the date portion (ignores time or Z)
             appointment_date = datetime.datetime.strptime(appointment_date_raw[:10], '%Y-%m-%d').date()
             if appointment_date <= datetime.date.today():
                 appointment_date += datetime.timedelta(days=7)
