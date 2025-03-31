@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import requests
 from icalendar import Calendar
 from datetime import datetime, timedelta, time
+from dateutil import parser as date_parser
 import pytz
 
 app = Flask(__name__)
@@ -91,7 +92,7 @@ def get_availability():
 
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
     formatted_slots = [
-        f"{appointment_date.strftime('%A, %B %d')} at {slot['start'][11:16]}"
+        f"{appointment_date.strftime('%A, %B %d')} at {date_parser.parse(slot['start']).astimezone(pacific).strftime('%I:%M %p').lstrip('0')}"
         for slot in slots
     ]
 
