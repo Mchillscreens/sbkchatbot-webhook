@@ -89,18 +89,30 @@ def get_availability():
     appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
+    appointment_date = None
     if isinstance(appointment_date_raw, str):
-        appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
-        if appointment_date <= datetime.date.today():
-            appointment_date += datetime.timedelta(days=7)
+        print(f"🧪 Raw appointment string: {appointment_date_raw}")
+        try:
+            # Parse only the date portion (ignores time or Z)
+            appointment_date = datetime.datetime.strptime(appointment_date_raw[:10], '%Y-%m-%d').date()
+            if appointment_date <= datetime.date.today():
+                appointment_date += datetime.timedelta(days=7)
+        except Exception as e:
+            print("❌ Error parsing appointment date string:", str(e))
+            appointment_date = datetime.date.today() + datetime.timedelta(days=1)
+
     elif isinstance(appointment_date_raw, dict):
-        appointment_date = datetime.date(
-            int(appointment_date_raw.get("year", 2025)),
-            int(appointment_date_raw.get("month", 1)),
-            int(appointment_date_raw.get("day", 1))
-        )
-        if appointment_date <= datetime.date.today():
-            appointment_date += datetime.timedelta(days=7)
+        try:
+            appointment_date = datetime.date(
+                int(appointment_date_raw.get("year", 2025)),
+                int(appointment_date_raw.get("month", 1)),
+                int(appointment_date_raw.get("day", 1))
+            )
+            if appointment_date <= datetime.date.today():
+                appointment_date += datetime.timedelta(days=7)
+        except Exception as e:
+            print("❌ Error parsing appointment date object:", str(e))
+            appointment_date = datetime.date.today() + datetime.timedelta(days=1)
     else:
         appointment_date = datetime.date.today() + datetime.timedelta(days=1)
 
