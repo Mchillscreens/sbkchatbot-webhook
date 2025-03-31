@@ -45,8 +45,14 @@ def find_open_slots(date, duration_minutes):
     if current_start < work_end:
         free_times.append((current_start, work_end))
 
+    # ✅ Filter out free blocks that aren't long enough
+    long_enough_blocks = [
+        (start, end) for start, end in free_times
+        if (end - start).total_seconds() >= duration_minutes * 60
+    ]
+
     slots = []
-    for free_start, free_end in free_times:
+    for free_start, free_end in long_enough_blocks:
         slot_start = free_start
         while slot_start + timedelta(minutes=duration_minutes) <= free_end:
             slot_end = slot_start + timedelta(minutes=duration_minutes)
@@ -54,7 +60,7 @@ def find_open_slots(date, duration_minutes):
                 'start': slot_start.isoformat(),
                 'end': slot_end.isoformat()
             })
-            slot_start += timedelta(minutes=15)  # stagger start times a bit
+            slot_start += timedelta(minutes=15)
 
     return slots
 
@@ -169,4 +175,4 @@ def get_availability():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ Breezy is running with screen-based appointment durations!"
+    return "✅ Breezy is running with smart time-length-aware booking!"
