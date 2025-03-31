@@ -70,8 +70,9 @@ def webhook():
     # Optional: check if user requested today
     now = datetime.now(pst)
     user_date = req.get("sessionInfo", {}).get("parameters", {}).get("date")
+    print("Incoming user_date:", user_date)
     if user_date:
-        parsed = datetime.fromisoformat(user_date).astimezone(pst)
+        parsed = datetime.fromisoformat(user_date.replace("Z", "+00:00")).astimezone(pst)
         if parsed.date() == now.date():
             return jsonify({
                 "fulfillment_response": {
