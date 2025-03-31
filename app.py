@@ -3,7 +3,8 @@ import os
 import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
-import requests  # make sure this is at the top if not already
+import pytz
+import requests
 
 app = Flask(__name__)
 
@@ -16,13 +17,11 @@ credentials = service_account.Credentials.from_service_account_file(
 )
 
 service = build('calendar', 'v3', credentials=credentials)
+pacific = pytz.timezone("America/Los_Angeles")
 
 def get_events(start_time, end_time):
-    # Localize to PST if not already timezone-aware
-    if start_time.tzinfo is None:
-        start_time = start_time.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-8)))
-    if end_time.tzinfo is None:
-        end_time = end_time.replace(tzinfo=datetime.timezone(datetime.timedelta(hours=-8)))
+    start_time = pacific.localize(start_time)
+    end_time = pacific.localize(end_time)
 
     events_result = service.events().list(
         calendarId=CALENDAR_ID,
@@ -34,7 +33,7 @@ def get_events(start_time, end_time):
     return events_result.get('items', [])
 
 def find_open_slots(date, slot_duration_minutes=60):
-    work_start = datetime.datetime.combine(date, datetime.time(8, 0))  # 🕗 now starts at 8 AM
+    work_start = datetime.datetime.combine(date, datetime.time(8, 0))
     work_end = datetime.datetime.combine(date, datetime.time(17, 0))
     events = get_events(work_start, work_end)
 
