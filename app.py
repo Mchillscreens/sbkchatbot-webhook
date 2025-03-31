@@ -5,7 +5,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import pytz
 import requests
-from dateutil import parser as date_parser  # NEW: for smart ISO parsing
+from dateutil import parser as date_parser
 
 app = Flask(__name__)
 
@@ -45,13 +45,16 @@ def find_open_slots(date, slot_duration_minutes=60):
     work_end = pacific.localize(datetime.datetime.combine(date, datetime.time(17, 0)))
     events = get_events(work_start, work_end)
 
-    # NEW: parse busy times using smart dateutil parser
     busy_times = [
         (
             date_parser.parse(event['start']['dateTime']),
             date_parser.parse(event['end']['dateTime'])
         ) for event in events if 'dateTime' in event['start'] and 'dateTime' in event['end']
     ]
+
+    print(f"📆 Busy times on {date}:")
+    for b_start, b_end in busy_times:
+        print(f"⛔ {b_start.time()} to {b_end.time()}")
 
     free_times = []
     current_start = work_start
@@ -68,12 +71,21 @@ def find_open_slots(date, slot_duration_minutes=60):
         slot_start = free_start
         while slot_start + datetime.timedelta(minutes=slot_duration_minutes) <= free_end:
             slot_end = slot_start + datetime.timedelta(minutes=slot_duration_minutes)
-            available_slots.append({
-                'start': slot_start.isoformat(),
-                'end': slot_end.isoformat()
-            })
+
+            # DEBUG: Show comparisons between slot and all busy times
+            print(f"🔍 Checking slot {slot_start.time()}–{slot_end.time()} vs busy:")
+            for b_start, b_end in busy_times:
+                print(f"    ⛔ {b_start.time()} to {b_end.time()}")
+
+            if not any(start < slot_end and slot_start < end for start, end in busy_times):
+                available_slots.append({
+                    'start': slot_start.isoformat(),
+                    'end': slot_end.isoformat()
+                })
+
             slot_start = slot_end
 
+    print(f"✅ Found {len(available_slots)} available slots.")
     return available_slots
 
 @app.route("/", methods=["GET"])
