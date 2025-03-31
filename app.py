@@ -3,6 +3,7 @@ import os
 import datetime
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+import requests  # make sure this is at the top if not already
 
 app = Flask(__name__)
 
@@ -78,14 +79,18 @@ def get_availability():
 
     if isinstance(appointment_date_raw, str):
         appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
+        if appointment_date <= datetime.date.today():
+            appointment_date += datetime.timedelta(days=7)
     elif isinstance(appointment_date_raw, dict):
         appointment_date = datetime.date(
             int(appointment_date_raw.get("year", 2025)),
             int(appointment_date_raw.get("month", 1)),
             int(appointment_date_raw.get("day", 1))
         )
+        if appointment_date <= datetime.date.today():
+            appointment_date += datetime.timedelta(days=7)
     else:
-        appointment_date = datetime.date.today()
+        appointment_date = datetime.date.today() + datetime.timedelta(days=1)
 
     print(f"🗓️ Parsed appointment date: {appointment_date}")
 
@@ -176,11 +181,6 @@ def get_availability():
             ]
         }
     }), 200
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
-import requests  # make sure this is at the top if not already
 
 @app.route("/send_to_zapier", methods=["POST"])
 def send_to_zapier():
