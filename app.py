@@ -67,29 +67,29 @@ def generate_availability(busy_times):
 @app.route('/webhook', methods=['POST'])
 def webhook():
     req = request.get_json()
-    # Optional: check if user requested today
     now = datetime.now(pst)
     user_date = req.get("sessionInfo", {}).get("parameters", {}).get("date")
-print("Incoming user_date:", user_date)
-try:
-    if user_date:
-        parsed = datetime.fromisoformat(user_date.replace("Z", "+00:00")).astimezone(pst)
-        if parsed.date() == now.date():
-            return jsonify({
-                "fulfillment_response": {
-                    "messages": [
-                        {"text": {"text": ["Same-day appointments must be booked by phone. Please call our office at 760-248-8000."]}}
-                    ]
-                },
-                "sessionInfo": {
-                    "parameters": {
-                        "booking_flow_completed": True
-                    }
-                }
-            })
-except Exception as e:
-    print("Date parsing error:", str(e))
 
+    print("Incoming user_date:", user_date)
+
+    try:
+        if user_date:
+            parsed = datetime.fromisoformat(user_date.replace("Z", "+00:00")).astimezone(pst)
+            if parsed.date() == now.date():
+                return jsonify({
+                    "fulfillment_response": {
+                        "messages": [
+                            {"text": {"text": ["Same-day appointments must be booked by phone. Please call our office at 760-248-8000."]}}
+                        ]
+                    },
+                    "sessionInfo": {
+                        "parameters": {
+                            "booking_flow_completed": True
+                        }
+                    }
+                })
+    except Exception as e:
+        print("Date parsing error:", str(e))
 
     busy_times = get_busy_times()
     available = generate_availability(busy_times)
