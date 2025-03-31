@@ -28,7 +28,7 @@ def fetch_busy_times():
         print("❌ Error fetching .ics:", e)
         return []
 
-def find_open_slots(date, slot_duration_minutes=60):
+def find_open_slots(date, duration_minutes):
     work_start = pacific.localize(datetime.combine(date, time(8, 0)))
     work_end = pacific.localize(datetime.combine(date, time(17, 0)))
     busy_times = fetch_busy_times()
@@ -48,13 +48,13 @@ def find_open_slots(date, slot_duration_minutes=60):
     slots = []
     for free_start, free_end in free_times:
         slot_start = free_start
-        while slot_start + timedelta(minutes=slot_duration_minutes) <= free_end:
-            slot_end = slot_start + timedelta(minutes=slot_duration_minutes)
+        while slot_start + timedelta(minutes=duration_minutes) <= free_end:
+            slot_end = slot_start + timedelta(minutes=duration_minutes)
             slots.append({
                 'start': slot_start.isoformat(),
                 'end': slot_end.isoformat()
             })
-            slot_start = slot_end
+            slot_start += timedelta(minutes=15)  # stagger start times a bit
 
     return slots
 
@@ -66,9 +66,17 @@ def get_availability():
     tag = data.get("fulfillmentInfo", {}).get("tag", "")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
+    # Parse screen count and calculate duration
+    screens = parameters.get("screens_needed", 1)
+    try:
+        screens = int(screens)
+    except:
+        screens = 1
+    duration = max(60, screens * 20)  # in minutes
+
+    # Parse the appointment date
     appointment_date_raw = parameters.get("appointment_date")
     appointment_date = None
-
     try:
         if isinstance(appointment_date_raw, str):
             appointment_date = datetime.strptime(appointment_date_raw[:10], "%Y-%m-%d").date()
@@ -87,8 +95,8 @@ def get_availability():
         print("❌ Error parsing date:", e)
         appointment_date = datetime.now(pacific).date() + timedelta(days=1)
 
-    print(f"📆 Checking availability for: {appointment_date}")
-    slots = find_open_slots(appointment_date)
+    print(f"📆 Checking availability for: {appointment_date}, Duration: {duration} mins")
+    slots = find_open_slots(appointment_date, duration)
 
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
     formatted_slots = [
@@ -161,4 +169,4 @@ def get_availability():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ Breezy is running with Jobber .ics calendar sync!"
+    return "✅ Breezy is running with screen-based appointment durations!"
