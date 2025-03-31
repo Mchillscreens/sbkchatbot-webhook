@@ -4,6 +4,7 @@ from icalendar import Calendar
 from datetime import datetime, timedelta, time
 from dateutil import parser as date_parser
 import pytz
+import re
 
 app = Flask(__name__)
 
@@ -26,7 +27,6 @@ def fetch_busy_times(date):
                     start_local = start.astimezone(pacific)
                     end_local = end.astimezone(pacific)
 
-                    # Check if this event overlaps with the target date
                     if start_local.date() <= date <= end_local.date():
                         busy.append((start_local, end_local))
         return busy
@@ -44,7 +44,6 @@ def find_open_slots(date, duration_minutes):
     for b_start, b_end in busy_times:
         print(f"  - {b_start.strftime('%H:%M')} to {b_end.strftime('%H:%M')}")
 
-    # Build free time windows
     free_times = []
     current_start = work_start
     for busy_start, busy_end in sorted(busy_times):
@@ -59,7 +58,6 @@ def find_open_slots(date, duration_minutes):
     for f_start, f_end in free_times:
         print(f"  - {f_start.strftime('%H:%M')} to {f_end.strftime('%H:%M')} ({(f_end - f_start).seconds // 60} mins)")
 
-    # Only use blocks long enough for the appointment
     long_enough_blocks = [
         (start, end) for start, end in free_times
         if (end - start).total_seconds() >= duration_minutes * 60
@@ -87,10 +85,10 @@ def get_availability():
     tag = data.get("fulfillmentInfo", {}).get("tag", "")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # Parse screen count and calculate duration
-    screens = parameters.get("screens_needed", 1)
+    # 🧠 Extract screen count and calculate duration
+    screens_raw = parameters.get("screens_needed", 1)
     try:
-        screens = int(screens)
+        screens = int(re.search(r"\d+", str(screens_raw)).group())
     except:
         screens = 1
     duration = max(60, screens * 20)
@@ -190,4 +188,4 @@ def get_availability():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ Breezy is running with overlap-aware filtering and better logging!"
+    return "✅ Breezy is running with accurate screen-based duration!"
