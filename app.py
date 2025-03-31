@@ -5,6 +5,7 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import pytz
 import requests
+from dateutil import parser as date_parser  # NEW: for smart ISO parsing
 
 app = Flask(__name__)
 
@@ -44,11 +45,12 @@ def find_open_slots(date, slot_duration_minutes=60):
     work_end = pacific.localize(datetime.datetime.combine(date, datetime.time(17, 0)))
     events = get_events(work_start, work_end)
 
+    # NEW: parse busy times using smart dateutil parser
     busy_times = [
         (
-            datetime.datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00')),
-            datetime.datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
-        ) for event in events
+            date_parser.parse(event['start']['dateTime']),
+            date_parser.parse(event['end']['dateTime'])
+        ) for event in events if 'dateTime' in event['start'] and 'dateTime' in event['end']
     ]
 
     free_times = []
