@@ -11,7 +11,7 @@ app = Flask(__name__)
 JOBBER_ICS_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics?at%5B%5D=2398076&ot%5B%5D=basic&ot%5B%5D=reminders&ot%5B%5D=events&ot%5B%5D=visits&ot%5B%5D=assessments&at%5B%5D=-1"
 pacific = pytz.timezone("America/Los_Angeles")
 
-def fetch_busy_times():
+def fetch_busy_times(date):
     try:
         response = requests.get(JOBBER_ICS_URL)
         cal = Calendar.from_ical(response.content)
@@ -21,8 +21,14 @@ def fetch_busy_times():
             if component.name == "VEVENT":
                 start = component.get('dtstart').dt
                 end = component.get('dtend').dt
+
                 if isinstance(start, datetime) and isinstance(end, datetime):
-                    busy.append((start.astimezone(pacific), end.astimezone(pacific)))
+                    start_local = start.astimezone(pacific)
+                    end_local = end.astimezone(pacific)
+
+                    # Check if this event overlaps with the target date
+                    if start_local.date() <= date <= end_local.date():
+                        busy.append((start_local, end_local))
         return busy
     except Exception as e:
         print("❌ Error fetching .ics:", e)
@@ -31,13 +37,17 @@ def fetch_busy_times():
 def find_open_slots(date, duration_minutes):
     work_start = pacific.localize(datetime.combine(date, time(8, 0)))
     work_end = pacific.localize(datetime.combine(date, time(17, 0)))
-    busy_times = fetch_busy_times()
+    busy_times = fetch_busy_times(date)
 
+    print(f"📆 Looking for {duration_minutes}-minute slots on {date}")
+    print(f"⛔ Busy times:")
+    for b_start, b_end in busy_times:
+        print(f"  - {b_start.strftime('%H:%M')} to {b_end.strftime('%H:%M')}")
+
+    # Build free time windows
     free_times = []
     current_start = work_start
     for busy_start, busy_end in sorted(busy_times):
-        if busy_start.date() != date:
-            continue
         if current_start < busy_start:
             free_times.append((current_start, busy_start))
         current_start = max(current_start, busy_end)
@@ -45,7 +55,11 @@ def find_open_slots(date, duration_minutes):
     if current_start < work_end:
         free_times.append((current_start, work_end))
 
-    # ✅ Filter out free blocks that aren't long enough
+    print(f"✅ Free blocks:")
+    for f_start, f_end in free_times:
+        print(f"  - {f_start.strftime('%H:%M')} to {f_end.strftime('%H:%M')} ({(f_end - f_start).seconds // 60} mins)")
+
+    # Only use blocks long enough for the appointment
     long_enough_blocks = [
         (start, end) for start, end in free_times
         if (end - start).total_seconds() >= duration_minutes * 60
@@ -62,6 +76,7 @@ def find_open_slots(date, duration_minutes):
             })
             slot_start += timedelta(minutes=15)
 
+    print(f"🧠 Final available slots: {len(slots)}")
     return slots
 
 @app.route("/get_availability", methods=["POST"])
@@ -78,7 +93,7 @@ def get_availability():
         screens = int(screens)
     except:
         screens = 1
-    duration = max(60, screens * 20)  # in minutes
+    duration = max(60, screens * 20)
 
     # Parse the appointment date
     appointment_date_raw = parameters.get("appointment_date")
@@ -101,7 +116,7 @@ def get_availability():
         print("❌ Error parsing date:", e)
         appointment_date = datetime.now(pacific).date() + timedelta(days=1)
 
-    print(f"📆 Checking availability for: {appointment_date}, Duration: {duration} mins")
+    print(f"📅 Checking availability for {appointment_date}, needing {duration} minutes")
     slots = find_open_slots(appointment_date, duration)
 
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
@@ -141,7 +156,7 @@ def get_availability():
     if not slots:
         return jsonify({
             "fulfillment_response": {
-                "messages": [{"text": {"text": ["❌ No availability found."]}}]
+                "messages": [{"text": {"text": ["❌ No availability found that fits the time needed."]}}]
             }
         })
 
@@ -175,4 +190,4 @@ def get_availability():
 
 @app.route("/", methods=["GET"])
 def home():
-    return "✅ Breezy is running with smart time-length-aware booking!"
+    return "✅ Breezy is running with overlap-aware filtering and better logging!"
