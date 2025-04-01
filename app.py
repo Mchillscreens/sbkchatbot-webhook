@@ -73,6 +73,7 @@ def home():
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
+    data = request.get_json(silent=True)
     tag = data.get("fulfillmentInfo", {}).get("tag", "")
     if tag == "availability_next":
         print("🧠 Handling 'Next Available' request")
@@ -136,7 +137,6 @@ def get_availability():
     
     print("✅ Webhook called at /get_availability")
 
-    data = request.get_json(silent=True)
     tag = data.get("fulfillmentInfo", {}).get("tag")
     parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
@@ -250,7 +250,6 @@ def get_availability():
 
 @app.route("/send_to_zapier", methods=["POST"])
 def send_to_zapier():
-    data = request.get_json(silent=True)
     print("📨 /send_to_zapier was called")
     print("Incoming data:", data)
 
