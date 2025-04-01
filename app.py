@@ -164,23 +164,35 @@ def get_availability():
         }
     })
 
-@app.route("/send_request_to_zapier", methods=["POST"])
-def send_request_to_zapier():
+@app.route("/send_booking_request", methods=["POST"])
+def send_booking_request():
     data = request.get_json(silent=True)
-    params = data.get("sessionInfo", {}).get("parameters", {})
+    parameters = data.get("sessionInfo", {}).get("parameters", {})
+
+    first_name = parameters.get("first-name", "")
+    last_name = parameters.get("last-name", "")
+    email = parameters.get("email", "")
+    phone = parameters.get("phone", "")
+    screens_needed = parameters.get("screens_needed", "")
+    service_address = parameters.get("service_address", "")  # ✅ NEW
 
     payload = {
-        "first_name": params.get("first_name"),
-        "last_name": params.get("last_name"),
-        "email": params.get("email"),
-        "phone": params.get("phone_number"),
-        "screens_needed": params.get("screens_needed")
+        "first_name": first_name,
+        "last_name": last_name,
+        "email": email,
+        "phone": phone,
+        "screens_needed": screens_needed,
+        "service_address": service_address,  # ✅ NEW
     }
 
     response = requests.post(ZAPIER_WEBHOOK_URL, json=payload)
-    status = "✅ Sent to Jobber via Zapier" if response.status_code == 200 else "❌ Failed to send"
+    print("📤 Sent to Zapier:", payload)
+    print("📬 Zapier response:", response.status_code)
+
     return jsonify({
         "fulfillment_response": {
-            "messages": [{"text": {"text": [status]}}]
+            "messages": [{"text": {"text": [
+                "📬 Your booking request was submitted! We’ll follow up shortly to confirm your appointment."
+            ]}}]
         }
     })
