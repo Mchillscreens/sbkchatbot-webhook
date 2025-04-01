@@ -5,6 +5,8 @@ from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import pytz
 import requests
+from dateutil import parser as date_parser
+from datetime import timedelta, datetime
 
 app = Flask(__name__)
 
@@ -33,14 +35,14 @@ def get_events(start_time, end_time):
     return events_result.get('items', [])
 
 def find_open_slots(date, slot_duration_minutes=60):
-    work_start = datetime.datetime.combine(date, datetime.time(8, 0))
-    work_end = datetime.datetime.combine(date, datetime.time(17, 0))
+    work_start = datetime.combine(date, datetime.time(8, 0))
+    work_end = datetime.combine(date, datetime.time(17, 0))
     events = get_events(work_start, work_end)
 
     busy_times = [
         (
-            datetime.datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00')),
-            datetime.datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
+            datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00')),
+            datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
         ) for event in events
     ]
 
@@ -57,8 +59,8 @@ def find_open_slots(date, slot_duration_minutes=60):
     available_slots = []
     for free_start, free_end in free_times:
         slot_start = free_start
-        while slot_start + datetime.timedelta(minutes=slot_duration_minutes) <= free_end:
-            slot_end = slot_start + datetime.timedelta(minutes=slot_duration_minutes)
+        while slot_start + timedelta(minutes=slot_duration_minutes) <= free_end:
+            slot_end = slot_start + timedelta(minutes=slot_duration_minutes)
             available_slots.append({
                 'start': slot_start.isoformat(),
                 'end': slot_end.isoformat()
@@ -75,6 +77,8 @@ def home():
 def get_availability():
     data = request.get_json(silent=True)
     tag = data.get("fulfillmentInfo", {}).get("tag", "")
+    parameters = data.get("sessionInfo", {}).get("parameters", {})
+
     if tag == "availability_next":
         print("🧠 Handling 'Next Available' request")
         screens_raw = parameters.get("screens_needed", 1)
@@ -126,6 +130,7 @@ def get_availability():
                     ]
                 }
             })
+
         else:
             return jsonify({
                 "fulfillment_response": {
@@ -134,29 +139,27 @@ def get_availability():
                     ]}}]
                 }
             })
-    
+
     print("✅ Webhook called at /get_availability")
 
-    tag = data.get("fulfillmentInfo", {}).get("tag")
-    parameters = data.get("sessionInfo", {}).get("parameters", {})
     screens_needed = parameters.get("screens_needed")
     appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
     if isinstance(appointment_date_raw, str):
-        appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
-        if appointment_date <= datetime.date.today():
-            appointment_date += datetime.timedelta(days=7)
+        appointment_date = datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
+        if appointment_date <= datetime.today().date():
+            appointment_date += timedelta(days=7)
     elif isinstance(appointment_date_raw, dict):
-        appointment_date = datetime.date(
+        appointment_date = datetime(
             int(appointment_date_raw.get("year", 2025)),
             int(appointment_date_raw.get("month", 1)),
             int(appointment_date_raw.get("day", 1))
-        )
-        if appointment_date <= datetime.date.today():
-            appointment_date += datetime.timedelta(days=7)
+        ).date()
+        if appointment_date <= datetime.today().date():
+            appointment_date += timedelta(days=7)
     else:
-        appointment_date = datetime.date.today() + datetime.timedelta(days=1)
+        appointment_date = datetime.today().date() + timedelta(days=1)
 
     print(f"🗓️ Parsed appointment date: {appointment_date}")
 
@@ -251,6 +254,7 @@ def get_availability():
 @app.route("/send_to_zapier", methods=["POST"])
 def send_to_zapier():
     print("📨 /send_to_zapier was called")
+    data = request.get_json(silent=True)
     print("Incoming data:", data)
 
     params = data.get("sessionInfo", {}).get("parameters", {})
