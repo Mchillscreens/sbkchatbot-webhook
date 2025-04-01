@@ -16,13 +16,23 @@ def get_busy_times(date):
     response = requests.get(JOBBER_ICS_URL)
     calendar = Calendar(response.text)
     busy = []
-    p_date = pendulum.parse(str(date)).start_of("day")
-    for event in calendar.timeline.on(p_date):
 
+    # ❌ OLD: This passes a DateTime into .on(), which causes the error.
+    # p_date = pendulum.parse(str(date))
+    # for event in calendar.timeline.on(p_date):
+
+    # ✅ NEW: Use `timeline.start_after()` instead, with a full-day range.
+    day_start = pendulum.datetime(date.year, date.month, date.day, 0, 0, 0, tz=pacific)
+    day_end = day_start.add(days=1)
+    for event in calendar.timeline.start_after(day_start):
+        if event.begin >= day_end:
+            break
         start = event.begin.astimezone(pacific).replace(tzinfo=None)
         end = event.end.astimezone(pacific).replace(tzinfo=None)
         busy.append((start, end))
+
     return sorted(busy)
+
 
 def find_open_slots(date, slot_duration_minutes=60):
     work_start = datetime.datetime.combine(date, datetime.time(8, 0))
