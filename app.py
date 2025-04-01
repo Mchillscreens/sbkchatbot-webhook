@@ -1,48 +1,48 @@
 from flask import Flask, request, jsonify
-import requests
-from icalendar import Calendar
-from datetime import datetime, timedelta, time
-from dateutil import parser as date_parser
+import os
+import datetime
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 import pytz
-import re
+import requests
 
 app = Flask(__name__)
 
-# Config
-JOBBER_ICS_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics?at%5B%5D=2398076&ot%5B%5D=basic&ot%5B%5D=reminders&ot%5B%5D=events&ot%5B%5D=visits&ot%5B%5D=assessments&at%5B%5D=-1"
+SCOPES = ['https://www.googleapis.com/auth/calendar']
+SERVICE_ACCOUNT_FILE = '/etc/secrets/breezy-calendar-interation-dab07558a5f0.json'
+CALENDAR_ID = 'c_39dbf363c487045db93009e4f1bcaf7209d9c6f18c820a09e4992adbd22b49e9@group.calendar.google.com'
+
+credentials = service_account.Credentials.from_service_account_file(
+    SERVICE_ACCOUNT_FILE, scopes=SCOPES
+)
+
+service = build('calendar', 'v3', credentials=credentials)
 pacific = pytz.timezone("America/Los_Angeles")
 
-def fetch_busy_times(date):
-    try:
-        response = requests.get(JOBBER_ICS_URL)
-        cal = Calendar.from_ical(response.content)
+def get_events(start_time, end_time):
+    start_time = pacific.localize(start_time)
+    end_time = pacific.localize(end_time)
 
-        busy = []
-        for component in cal.walk():
-            if component.name == "VEVENT":
-                start = component.get('dtstart').dt
-                end = component.get('dtend').dt
+    events_result = service.events().list(
+        calendarId=CALENDAR_ID,
+        timeMin=start_time.isoformat(),
+        timeMax=end_time.isoformat(),
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    return events_result.get('items', [])
 
-                if isinstance(start, datetime) and isinstance(end, datetime):
-                    start_local = start.astimezone(pacific)
-                    end_local = end.astimezone(pacific)
+def find_open_slots(date, slot_duration_minutes=60):
+    work_start = datetime.datetime.combine(date, datetime.time(8, 0))
+    work_end = datetime.datetime.combine(date, datetime.time(17, 0))
+    events = get_events(work_start, work_end)
 
-                    if start_local.date() <= date <= end_local.date():
-                        busy.append((start_local, end_local))
-        return busy
-    except Exception as e:
-        print("❌ Error fetching .ics:", e)
-        return []
-
-def find_open_slots(date, duration_minutes):
-    work_start = pacific.localize(datetime.combine(date, time(8, 0)))
-    work_end = pacific.localize(datetime.combine(date, time(17, 0)))
-    busy_times = fetch_busy_times(date)
-
-    print(f"📆 Looking for {duration_minutes}-minute slots on {date}")
-    print(f"⛔ Busy times:")
-    for b_start, b_end in busy_times:
-        print(f"  - {b_start.strftime('%H:%M')} to {b_end.strftime('%H:%M')}")
+    busy_times = [
+        (
+            datetime.datetime.fromisoformat(event['start']['dateTime'].replace('Z', '+00:00')),
+            datetime.datetime.fromisoformat(event['end']['dateTime'].replace('Z', '+00:00'))
+        ) for event in events
+    ]
 
     free_times = []
     current_start = work_start
@@ -54,76 +54,136 @@ def find_open_slots(date, duration_minutes):
     if current_start < work_end:
         free_times.append((current_start, work_end))
 
-    print(f"✅ Free blocks:")
-    for f_start, f_end in free_times:
-        print(f"  - {f_start.strftime('%H:%M')} to {f_end.strftime('%H:%M')} ({(f_end - f_start).seconds // 60} mins)")
-
-    long_enough_blocks = [
-        (start, end) for start, end in free_times
-        if (end - start).total_seconds() >= duration_minutes * 60
-    ]
-
-    slots = []
-    for free_start, free_end in long_enough_blocks:
+    available_slots = []
+    for free_start, free_end in free_times:
         slot_start = free_start
-        while slot_start + timedelta(minutes=duration_minutes) <= free_end:
-            slot_end = slot_start + timedelta(minutes=duration_minutes)
-            slots.append({
+        while slot_start + datetime.timedelta(minutes=slot_duration_minutes) <= free_end:
+            slot_end = slot_start + datetime.timedelta(minutes=slot_duration_minutes)
+            available_slots.append({
                 'start': slot_start.isoformat(),
                 'end': slot_end.isoformat()
             })
-            slot_start += timedelta(minutes=15)
+            slot_start = slot_end
 
-    print(f"🧠 Final available slots: {len(slots)}")
-    return slots
+    return available_slots
+
+@app.route("/", methods=["GET"])
+def home():
+    return "✅ Webhook is alive!"
 
 @app.route("/get_availability", methods=["POST"])
 def get_availability():
-    print("✅ Webhook called at /get_availability")
-    data = request.get_json(silent=True)
-    parameters = data.get("sessionInfo", {}).get("parameters", {})
     tag = data.get("fulfillmentInfo", {}).get("tag", "")
+    if tag == "availability_next":
+        print("🧠 Handling 'Next Available' request")
+        screens_raw = parameters.get("screens_needed", 1)
+        try:
+            import re
+            screens = int(re.search(r"\d+", str(screens_raw)).group())
+        except:
+            screens = 1
+        duration = max(60, screens * 20)
+
+        today = datetime.now(pacific).date()
+        found_slot = None
+        for i in range(1, 11):  # next 10 days
+            check_date = today + timedelta(days=i)
+            if check_date.weekday() >= 5:
+                continue  # skip weekends
+            slots = find_open_slots(check_date, duration)
+            if slots:
+                found_slot = {
+                    "date": check_date,
+                    "slot": slots[0]
+                }
+                break
+
+        if found_slot:
+            formatted = f"{found_slot['date'].strftime('%A, %B %d')} at " + date_parser.parse(found_slot['slot']['start']).astimezone(pacific).strftime("%I:%M %p").lstrip("0")
+            return jsonify({
+                "sessionInfo": {
+                    "parameters": {
+                        "booking_flow_completed": False
+                    }
+                },
+                "fulfillment_response": {
+                    "messages": [
+                        {"text": {"text": [
+                            f"✅ Our next available time is {formatted}. Does that work for you?"
+                        ]}},
+                        {"payload": {
+                            "richContent": [[
+                                {
+                                    "type": "chips",
+                                    "options": [
+                                        {"text": "Yes, that time works"},
+                                        {"text": "See more options"}
+                                    ]
+                                }
+                            ]]
+                        }}
+                    ]
+                }
+            })
+        else:
+            return jsonify({
+                "fulfillment_response": {
+                    "messages": [{"text": {"text": [
+                        "❌ Sorry, we couldn’t find anything in the next 10 days that fits your service time."
+                    ]}}]
+                }
+            })
+    
+    print("✅ Webhook called at /get_availability")
+
+    data = request.get_json(silent=True)
+    tag = data.get("fulfillmentInfo", {}).get("tag")
+    parameters = data.get("sessionInfo", {}).get("parameters", {})
+    screens_needed = parameters.get("screens_needed")
+    appointment_date_raw = parameters.get("appointment_date")
     showing_more_slots = parameters.get("showing_more_slots", False)
 
-    # 🧠 Extract screen count and calculate duration
-    screens_raw = parameters.get("screens_needed", 1)
-    try:
-        screens = int(re.search(r"\d+", str(screens_raw)).group())
-    except:
-        screens = 1
-    duration = max(60, screens * 20)
+    if isinstance(appointment_date_raw, str):
+        appointment_date = datetime.datetime.strptime(appointment_date_raw, '%Y-%m-%d').date()
+        if appointment_date <= datetime.date.today():
+            appointment_date += datetime.timedelta(days=7)
+    elif isinstance(appointment_date_raw, dict):
+        appointment_date = datetime.date(
+            int(appointment_date_raw.get("year", 2025)),
+            int(appointment_date_raw.get("month", 1)),
+            int(appointment_date_raw.get("day", 1))
+        )
+        if appointment_date <= datetime.date.today():
+            appointment_date += datetime.timedelta(days=7)
+    else:
+        appointment_date = datetime.date.today() + datetime.timedelta(days=1)
 
-    # Parse the appointment date
-    appointment_date_raw = parameters.get("appointment_date")
-    appointment_date = None
-    try:
-        if isinstance(appointment_date_raw, str):
-            appointment_date = datetime.strptime(appointment_date_raw[:10], "%Y-%m-%d").date()
-        elif isinstance(appointment_date_raw, dict):
-            appointment_date = datetime(
-                int(appointment_date_raw.get("year")),
-                int(appointment_date_raw.get("month")),
-                int(appointment_date_raw.get("day"))
-            ).date()
-        else:
-            appointment_date = datetime.now(pacific).date() + timedelta(days=1)
+    print(f"🗓️ Parsed appointment date: {appointment_date}")
 
-        if appointment_date <= datetime.now(pacific).date():
-            appointment_date += timedelta(days=7)
-    except Exception as e:
-        print("❌ Error parsing date:", e)
-        appointment_date = datetime.now(pacific).date() + timedelta(days=1)
-
-    print(f"📅 Checking availability for {appointment_date}, needing {duration} minutes")
-    slots = find_open_slots(appointment_date, duration)
-
+    slots = find_open_slots(appointment_date)
     booking_link = "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
+
     formatted_slots = [
-        f"{appointment_date.strftime('%A, %B %d')} at {date_parser.parse(slot['start']).astimezone(pacific).strftime('%I:%M %p').lstrip('0')}"
+        f"{appointment_date.strftime('%A, %B %d')} at {slot['start'][11:16]}"
         for slot in slots
     ]
 
     if tag == "get_more_slots" or showing_more_slots:
+        print("🔁 Showing more slot options")
+        chips = {
+            "richContent": [[
+                {
+                    "type": "chips",
+                    "options": [
+                        {"text": slot, "link": booking_link}
+                        for slot in formatted_slots[1:4]
+                    ] + [
+                        {"text": "See Full Booking Calendar", "link": booking_link}
+                    ]
+                }
+            ]]
+        }
+
         return jsonify({
             "sessionInfo": {
                 "parameters": {
@@ -134,14 +194,21 @@ def get_availability():
             "fulfillment_response": {
                 "messages": [
                     {"text": {"text": ["Here are a few more times you can book:"]}},
+                    {"payload": chips}
+                ]
+            }
+        }), 200
+
+    if not slots:
+        return jsonify({
+            "fulfillment_response": {
+                "messages": [
+                    {"text": {"text": ["❌ No available times found."]}},
                     {"payload": {
                         "richContent": [[
                             {
                                 "type": "chips",
                                 "options": [
-                                    {"text": slot, "link": booking_link}
-                                    for slot in formatted_slots[1:4]
-                                ] + [
                                     {"text": "See Full Booking Calendar", "link": booking_link}
                                 ]
                             }
@@ -149,16 +216,21 @@ def get_availability():
                     }}
                 ]
             }
-        })
-
-    if not slots:
-        return jsonify({
-            "fulfillment_response": {
-                "messages": [{"text": {"text": ["❌ No availability found that fits the time needed."]}}]
-            }
-        })
+        }), 200
 
     first_slot = formatted_slots[0]
+    chips = {
+        "richContent": [[
+            {
+                "type": "chips",
+                "options": [
+                    {"text": "Yes, that time works"},
+                    {"text": "See more options"}
+                ]
+            }
+        ]]
+    }
+
     return jsonify({
         "sessionInfo": {
             "parameters": {
@@ -171,21 +243,51 @@ def get_availability():
                 {"text": {"text": [
                     f"✅ We have an opening for {first_slot}! Does this time work, or would you like to see more options?"
                 ]}},
-                {"payload": {
-                    "richContent": [[
-                        {
-                            "type": "chips",
-                            "options": [
-                                {"text": "Yes, that time works"},
-                                {"text": "See more options"}
-                            ]
-                        }
-                    ]]
-                }}
+                {"payload": chips}
             ]
         }
-    })
+    }), 200
 
-@app.route("/", methods=["GET"])
-def home():
-    return "✅ Breezy is running with accurate screen-based duration!"
+@app.route("/send_to_zapier", methods=["POST"])
+def send_to_zapier():
+    data = request.get_json(silent=True)
+    print("📨 /send_to_zapier was called")
+    print("Incoming data:", data)
+
+    params = data.get("sessionInfo", {}).get("parameters", {})
+
+    payload = {
+        "name": params.get("user_name"),
+        "email": params.get("user_email"),
+        "phone": params.get("user_phone"),
+        "appointment_date": params.get("appointment_date"),
+        "screens_needed": params.get("screens_needed")
+    }
+
+    zapier_url = "https://hooks.zapier.com/hooks/catch/22255277/2c28k46/"
+    try:
+        zapier_response = requests.post(zapier_url, json=payload, timeout=5)
+        print("📤 Sent to Zapier. Status:", zapier_response.status_code)
+        print("🔁 Zapier Response:", zapier_response.text)
+    except Exception as e:
+        print("❌ Error sending to Zapier:", str(e))
+
+    return jsonify({
+        "fulfillment_response": {
+            "messages": [
+                {
+                    "text": {
+                        "text": [
+                            "✅ I’ve sent your booking details — you’re all set! We'll follow up soon to confirm your appointment."
+                        ]
+                    }
+                }
+            ]
+        },
+        "sessionInfo": {
+            "parameters": {
+                "booking_flow_completed": True,
+                "showing_more_slots": False
+            }
+        }
+    }), 200
