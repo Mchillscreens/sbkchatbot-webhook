@@ -16,12 +16,14 @@ def get_busy_times(date):
     calendar = Calendar(response.text)
     busy = []
 
-    # ✅ Pendulum patch: convert date to a Pendulum datetime so `.floor()` works
-    p_date = pendulum.parse(str(date))
-    for event in calendar.timeline.on(p_date):
-        start = event.begin.astimezone(pacific).replace(tzinfo=None)
-        end = event.end.astimezone(pacific).replace(tzinfo=None)
-        busy.append((start, end))
+    for event in calendar.events:
+        start = event.begin.astimezone(pacific)
+        end = event.end.astimezone(pacific)
+
+        # Check if the event overlaps with the given date
+        if start.date() == date or end.date() == date:
+            busy.append((start.replace(tzinfo=None), end.replace(tzinfo=None)))
+
     return sorted(busy)
 
 def find_open_slots(date, slot_duration_minutes=60):
