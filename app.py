@@ -177,13 +177,17 @@ def send_booking_request():
     service_address = parameters.get("service_address", "")  # ✅ NEW
 
     payload = {
-        "first_name": first_name,
-        "last_name": last_name,
-        "email": email,
-        "phone": phone,
-        "screens_needed": screens_needed,
-        "service_address": service_address,  # ✅ NEW
-    }
+    "first_name": first_name,
+    "last_name": last_name,
+    "email": email,
+    "phone": phone,
+    "street_address": parameters.get("street_address", "Not provided"),
+    "city": parameters.get("city", "Not provided"),
+    "state": parameters.get("state", "Not provided"),
+    "zip_code": parameters.get("zip_code", "Not provided"),
+    "screens_needed": screens_needed,
+}
+
 
     response = requests.post(ZAPIER_WEBHOOK_URL, json=payload)
     print("📤 Sent to Zapier:", payload)
