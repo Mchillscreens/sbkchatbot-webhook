@@ -5,25 +5,22 @@ import pytz
 from dateutil import parser as date_parser
 from ics import Calendar
 import re
-import pendulum  # ✅ NEW
+import pendulum
 
 app = Flask(__name__)
 pacific = pytz.timezone("America/Los_Angeles")
 JOBBER_ICS_URL = "https://secure.getjobber.com/calendar/35357303484436154516213451527256034241560538086184/jobber.ics?at%5B%5D=2398076&ot%5B%5D=basic&ot%5B%5D=reminders&ot%5B%5D=events&ot%5B%5D=visits&ot%5B%5D=assessments&at%5B%5D=-1"
+ZAPIER_WEBHOOK_URL = "https://hooks.zapier.com/hooks/catch/22255277/2c28k46/"
 
 def get_busy_times(date):
     response = requests.get(JOBBER_ICS_URL)
     calendar = Calendar(response.text)
     busy = []
-
-    for event in calendar.events:
-        start = event.begin.astimezone(pacific)
-        end = event.end.astimezone(pacific)
-
-        # Check if the event overlaps with the given date
-        if start.date() == date or end.date() == date:
-            busy.append((start.replace(tzinfo=None), end.replace(tzinfo=None)))
-
+    p_date = pendulum.parse(str(date))
+    for event in calendar.timeline.on(p_date):
+        start = event.begin.astimezone(pacific).replace(tzinfo=None)
+        end = event.end.astimezone(pacific).replace(tzinfo=None)
+        busy.append((start, end))
     return sorted(busy)
 
 def find_open_slots(date, slot_duration_minutes=60):
@@ -160,10 +157,30 @@ def get_availability():
                 ]
             }
         })
-# Triggering redeploy
 
     return jsonify({
         "fulfillment_response": {
             "messages": [{"text": {"text": ["⚠️ No matching tag."]}}]
+        }
+    })
+
+@app.route("/send_request_to_zapier", methods=["POST"])
+def send_request_to_zapier():
+    data = request.get_json(silent=True)
+    params = data.get("sessionInfo", {}).get("parameters", {})
+
+    payload = {
+        "first_name": params.get("first_name"),
+        "last_name": params.get("last_name"),
+        "email": params.get("email"),
+        "phone": params.get("phone_number"),
+        "screens_needed": params.get("screens_needed")
+    }
+
+    response = requests.post(ZAPIER_WEBHOOK_URL, json=payload)
+    status = "✅ Sent to Jobber via Zapier" if response.status_code == 200 else "❌ Failed to send"
+    return jsonify({
+        "fulfillment_response": {
+            "messages": [{"text": {"text": [status]}}]
         }
     })
