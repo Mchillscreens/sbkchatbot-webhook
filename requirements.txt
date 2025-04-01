@@ -9,4 +9,6 @@ google-auth==2.29.0
 google-auth-httplib2==0.2.0
 google-auth-oauthlib==1.2.0
 icalendar
+ics==0.7.2
+tatsu==4.4.0
 
