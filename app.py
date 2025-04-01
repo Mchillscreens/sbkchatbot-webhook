@@ -158,6 +158,7 @@ def get_availability():
                 ]
             }
         })
+# Triggering redeploy
 
     return jsonify({
         "fulfillment_response": {
