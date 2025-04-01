@@ -1,4 +1,3 @@
-
 from flask import Flask, request, jsonify
 import datetime
 import requests
@@ -6,6 +5,7 @@ import pytz
 from dateutil import parser as date_parser
 from ics import Calendar
 import re
+import pendulum  # ✅ NEW
 
 app = Flask(__name__)
 pacific = pytz.timezone("America/Los_Angeles")
@@ -15,7 +15,10 @@ def get_busy_times(date):
     response = requests.get(JOBBER_ICS_URL)
     calendar = Calendar(response.text)
     busy = []
-    for event in calendar.timeline.on(date):
+
+    # ✅ Pendulum patch: convert date to a Pendulum datetime so `.floor()` works
+    p_date = pendulum.parse(str(date))
+    for event in calendar.timeline.on(p_date):
         start = event.begin.astimezone(pacific).replace(tzinfo=None)
         end = event.end.astimezone(pacific).replace(tzinfo=None)
         busy.append((start, end))
