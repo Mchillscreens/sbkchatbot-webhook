@@ -16,8 +16,9 @@ def get_busy_times(date):
     response = requests.get(JOBBER_ICS_URL)
     calendar = Calendar(response.text)
     busy = []
-    p_date = pendulum.parse(str(date))
+    p_date = pendulum.parse(str(date)).start_of("day")
     for event in calendar.timeline.on(p_date):
+
         start = event.begin.astimezone(pacific).replace(tzinfo=None)
         end = event.end.astimezone(pacific).replace(tzinfo=None)
         busy.append((start, end))
