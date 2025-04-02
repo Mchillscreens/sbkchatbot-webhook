@@ -1,124 +1,1820 @@
 {
-  "displayName": "Default Start Flow",
-  "startPage": "Start Page",
-  "pages": [
-    {
-      "displayName": "Start Page",
-      "transitionRoutes": [
+  "flow": {
+    "flow": {
+      "flowId": "00000000-0000-0000-0000-000000000000",
+      "displayName": "Default Start Flow",
+      "description": "A start flow created along with the agent",
+      "transitionEvents": [
         {
-          "intent": "request_appointment_availability",
-          "targetPage": "collect_appointment_details",
-          "triggerFulfillment": {
-            "messages": [
-              {
-                "text": {
-                  "text": [
-                    "Hang tight while I check our real-time availability!"
-                  ]
-                }
+          "triggerIntentId": "00000000-0000-0000-0000-000000000000",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Hello! I\u2019m Breezy, the AI Assistant for Screens by Kaidan. I can help you book an appointment, give you a quick quote, check pricing, or answer any questions about our services. What can I help you with today?"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
               }
-            ]
+            }
+          },
+          "name": "ae6360e0-a3cd-4366-a3fd-ff95ae57028f"
+        },
+        {
+          "triggerIntentId": "1504bb5e-0d27-4ead-873d-18221841be15",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Great! You can book an appointment anytime using our online calendar. Click below to get started!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "payload": {
+                          "richContent": [
+                            [
+                              {
+                                "options": [
+                                  {
+                                    "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4",
+                                    "text": "\ud83d\udcc5 Book Now"
+                                  }
+                                ],
+                                "type": "chips"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "name": "book_appointment_route"
+        },
+        {
+          "triggerIntentId": "f4433f2e-ce1d-45a3-8641-b213cc9aeb1a",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Let me check the next available openings for you!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Our next available appointments are usually within 2\u20133 days. You can view exact times and book directly here:"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "payload": {
+                          "richContent": [
+                            [
+                              {
+                                "options": [
+                                  {
+                                    "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4",
+                                    "text": "\ud83d\udcc5 See Openings"
+                                  }
+                                ],
+                                "type": "chips"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "name": "next_available_route"
+        },
+        {
+          "triggerIntentId": "01206e65-4bdc-4c49-aa26-ec851c88c135",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Sure! For basic prices just ask for the pricelist or tell me what you specifically need. For a detailed quote, click below and fill out our request form."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "payload": {
+                          "richContent": [
+                            [
+                              {
+                                "options": [
+                                  {
+                                    "link": "https://clienthub.getjobber.com/client_hubs/37300a41-ea92-4da1-b45c-895204dd4e15/public/work_request/new?source=social_media",
+                                    "text": "\ud83d\udcdd Request a Quote"
+                                  }
+                                ],
+                                "type": "chips"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "name": "get_quote_pricing_route"
+        },
+        {
+          "triggerIntentId": "09a1b878-40cd-4cec-b126-897e3b55153c",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "No problem! You can call or text us at 760-248-8000, or email info@screensbykaidan.com. We're here to help!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "name": "contact_me_form_route"
+        },
+        {
+          "triggerIntentId": "94ab70f8-2ad1-4540-9e2d-c40a7ec10643",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "You can access your customer portal below to check, change or reschedule your appointments or to view estimates."
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "payload": {
+                          "richContent": [
+                            [
+                              {
+                                "options": [
+                                  {
+                                    "link": "https://clienthub.getjobber.com/client_hubs/37300a41-ea92-4da1-b45c-895204dd4e15/login/new?source=share_login",
+                                    "text": "\ud83d\udd11 Customer Portal"
+                                  }
+                                ],
+                                "type": "chips"
+                              }
+                            ]
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "name": "customer_portal_route"
+        },
+        {
+          "triggerIntentId": "de124df6-28e7-4545-bb3b-4a7464dd73a3",
+          "transitionEventHandler": {
+            "beforeTransition": {
+              "staticUserResponse": {
+                "candidates": [
+                  {
+                    "selector": {
+                      "platform": [
+                        "PLATFORM_UNSPECIFIED"
+                      ],
+                      "lang": "en"
+                    },
+                    "responses": [
+                      {
+                        "text": {
+                          "variants": [
+                            {
+                              "text": "Hang tight while I check our real-time availability!"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "targetPageId": "5d39f025-b424-4c59-871f-b7da610e73f4"
+          },
+          "name": "request_appointment_availability_route"
+        }
+      ],
+      "modelIdentifier": {
+        "modelId": "c6aec390-ab8c-4440-ab07-3a87ff9b4108"
+      },
+      "nluSettings": {
+        "classificationThreshold": 0.30000001,
+        "modelType": "MODEL_TYPE_ADVANCED"
+      },
+      "nluSettingsMapping": [
+        {
+          "key": "en",
+          "value": {
+            "classificationThreshold": 0.30000001,
+            "modelType": "MODEL_TYPE_ADVANCED",
+            "languageCode": "en"
           }
         }
       ]
     },
-    {
-      "displayName": "collect_appointment_details",
-      "form": {
-        "parameters": [
+    "intents": [
+      {
+        "meta": {
+          "id": "1504bb5e-0d27-4ead-873d-18221841be15",
+          "displayName": "book_appointment",
+          "priority": 500000
+        },
+        "trainingPhrases": [
           {
-            "displayName": "screens_needed",
-            "entityType": "@screen_count",
-            "required": true,
-            "fillBehavior": {
-              "initialPromptFulfillment": {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I need to schedule a visit",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Can I book an appointment with you?",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I'd like to make an appointment",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Book now"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Schedule a visit"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Book an appointment"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "01206e65-4bdc-4c49-aa26-ec851c88c135",
+          "displayName": "get_quote_pricing",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "What do you charge?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Price list"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Estimate"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "How much does it cost?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I need pricing"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Get a quote"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "94ab70f8-2ad1-4540-9e2d-c40a7ec10643",
+          "displayName": "customer_portal",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "reschedule appointment"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "cancel apointment"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "change appointment"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "log into portal"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "my portal"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "log into my account"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Log in"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "f4433f2e-ce1d-45a3-8641-b213cc9aeb1a",
+          "displayName": "next_available",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "How soon can you do the work?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "How soon can you come out?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "What are your open times?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "When can you come out?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Lead time"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "When is your next opening?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Next available appointments"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "5f66ec20-9a5d-44ce-b5f0-49110e7b676a",
+          "displayName": "availability_more",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "More time slots"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "What else to you have"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I want more options"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Show me more"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "685de89f-e369-4f58-bb9b-2b3724f3d8d3",
+          "displayName": "availability_yes",
+          "priority": 500000,
+          "parameters": [
+            {
+              "id": "date-time",
+              "displayName": "date-time",
+              "value": "$date-time",
+              "entityTypeDisplayName": "@sys.date-time"
+            }
+          ],
+          "description": "\"Yes\" response to the question, \"Does this time work, or would you like to see more options?\""
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Yes, that's great",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Perfect, I can do that",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "That works for me",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Let's book it"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "9:00",
+                "entityType": "@sys.date-time",
+                "alias": "date-time"
+              },
+              {
+                "text": " works for me"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "That time is good"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "yes that works"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Yes"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "de124df6-28e7-4545-bb3b-4a7464dd73a3",
+          "displayName": "request_appointment_availability",
+          "priority": 500000,
+          "parameters": [
+            {
+              "id": "number",
+              "displayName": "number",
+              "value": "$number",
+              "entityTypeDisplayName": "@sys.number"
+            }
+          ],
+          "description": "Triggered when users are looking for available appointment times or slots to book an appointment"
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Schedule "
+              },
+              {
+                "text": "5",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " screens"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Can you book me for ",
+                "userDefined": true
+              },
+              {
+                "text": "4",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " screens",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I need "
+              },
+              {
+                "text": "3",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " screens serviced"
+              }
+            ],
+            "timesAddedCount": 2,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Schedule service for "
+              },
+              {
+                "text": "6",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " windows"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I wan to schedule 2 screens"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "5",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " screens need repair"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Can I book "
+              },
+              {
+                "text": "4",
+                "entityType": "@sys.number",
+                "alias": "number"
+              },
+              {
+                "text": " screens?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I'm looking to book an appointment, what's your availability?",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Do you have any openings for an appointment?",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "What are your available appointment slots?",
+                "userDefined": true
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I need an appointment for my screens"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Check availability for screens"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "What times do you have open?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "When can I schedule service?"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Check available times"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I want to book an appointment"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "00000000-0000-0000-0000-000000000000",
+          "displayName": "Default Welcome Intent",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "id": "a983b552-ae98-4f5e-b4d8-505e9dc581d5",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "just going to say hi"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "d83bbe93-4b5e-44db-a778-ab44f7c790b6",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "heya"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "8f02169b-f715-4504-8d6c-0a684907f88e",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hello hi"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "16324ae5-a054-4c74-9c15-2b2ab09b89e7",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "howdy"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "13974a7c-137f-47d2-bba4-0be7cd078671",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hey there"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "a0593353-e04a-4dda-afe1-281417be766b",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hi there"
+              }
+            ],
+            "timesAddedCount": 2,
+            "lang": "en"
+          },
+          {
+            "id": "57d695d9-98ea-4b7b-bec9-3c7a9adac799",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "greetings"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "076fd01a-8737-4a42-9d38-be1830bcb8b4",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hey"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "c722a12b-08d7-4028-ad8e-cf1974c2362f",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "long time no see"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "a981bf64-7408-4d79-8077-8cfda4115323",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hello"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "5f6e25b4-dc2b-4e06-b0ad-0fbd26333843",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "lovely day isn't it"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "2dad8c43-6669-48b8-b713-18a943ec1f59",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I greet you"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "9d4587ab-e0d5-44be-a2d3-9473ff05a08f",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hello again"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "ec688540-66d7-451c-8830-82db77751397",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hi"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "94428522-ce88-4449-99a9-4f5ca867b913",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "hello there"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "id": "435f5550-1124-4c08-9c73-583677152949",
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "a good day"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      },
+      {
+        "meta": {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "displayName": "Default Negative Intent",
+          "priority": 500000,
+          "isFallback": true
+        }
+      },
+      {
+        "meta": {
+          "id": "09a1b878-40cd-4cec-b126-897e3b55153c",
+          "displayName": "contact_me_form",
+          "priority": 500000
+        },
+        "trainingPhrases": [
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Speak to a person"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "talk to someone"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Reach out to me"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "I need help"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          },
+          {
+            "type": "EXAMPLE",
+            "parts": [
+              {
+                "text": "Contact me"
+              }
+            ],
+            "timesAddedCount": 1,
+            "lang": "en"
+          }
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "id": "3979da76-a726-4233-965d-e01b37a9241e",
+        "displayName": "screen_count",
+        "kind": "KIND_MAP",
+        "entries": [
+          {
+            "value": "10 screens",
+            "synonyms": [
+              "10 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "9 screens",
+            "synonyms": [
+              "9 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "8 screens",
+            "synonyms": [
+              "8 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "7 screens",
+            "synonyms": [
+              "7 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "6 screens",
+            "synonyms": [
+              "6 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "5 screens",
+            "synonyms": [
+              "5 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "4 screens",
+            "synonyms": [
+              "4",
+              "4 screens",
+              "four",
+              "4 screen"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "3 screens",
+            "synonyms": [
+              "3 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "2 screens",
+            "synonyms": [
+              "2 screens"
+            ],
+            "lang": "en"
+          },
+          {
+            "value": "1 screen",
+            "synonyms": [
+              "1 screen"
+            ],
+            "lang": "en"
+          }
+        ],
+        "nluSettings": {}
+      }
+    ],
+    "pages": [
+      {
+        "key": "5d39f025-b424-4c59-871f-b7da610e73f4",
+        "value": {
+          "displayName": "collect_appointment_details",
+          "onLoad": {
+            "playbackInterruptionSettings": {},
+            "dtmfSettings": {
+              "useSystemEntityRule": false
+            }
+          },
+          "slots": [
+            {
+              "displayName": "screens_needed",
+              "mode": "REQUIRED",
+              "type": {
+                "className": "@screen_count",
+                "classType": "ENUMERATION",
+                "enumerationId": "3979da76-a726-4233-965d-e01b37a9241e"
+              },
+              "fillBehavior": {
+                "initialPrompt": {
+                  "staticUserResponse": {
+                    "candidates": [
+                      {
+                        "selector": {
+                          "platform": [
+                            "PLATFORM_UNSPECIFIED"
+                          ],
+                          "lang": "en"
+                        },
+                        "responses": [
+                          {
+                            "text": {
+                              "variants": [
+                                {
+                                  "text": "How many screens do you need serviced?"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "repromptEvents": [
+                  {
+                    "event": "sys.no-match-1",
+                    "handler": {
+                      "beforeTransition": {
+                        "staticUserResponse": {
+                          "candidates": [
+                            {
+                              "selector": {
+                                "platform": [
+                                  "PLATFORM_UNSPECIFIED"
+                                ],
+                                "lang": "en"
+                              },
+                              "responses": [
+                                {
+                                  "text": {
+                                    "variants": [
+                                      {
+                                        "text": "Sorry, I didn't catch that. How many screens do you need serviced? Please reply with a number like 3 or 4."
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "name": "47b18486-1fad-4fad-9e21-e37f361a3ef3"
+                  }
+                ]
+              }
+            },
+            {
+              "displayName": "appointment_date",
+              "mode": "REQUIRED",
+              "type": {
+                "className": "@sys.date",
+                "classType": "BUILT_IN_CLASS"
+              },
+              "fillBehavior": {
+                "initialPrompt": {
+                  "staticUserResponse": {
+                    "candidates": [
+                      {
+                        "selector": {
+                          "platform": [
+                            "PLATFORM_UNSPECIFIED"
+                          ],
+                          "lang": "en"
+                        },
+                        "responses": [
+                          {
+                            "text": {
+                              "variants": [
+                                {
+                                  "text": "What day works best for your appointment?"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "transitionEvents": [
+            {
+              "triggerIntentId": "685de89f-e369-4f58-bb9b-2b3724f3d8d3",
+              "transitionEventHandler": {
+                "beforeTransition": {
+                  "staticUserResponse": {
+                    "candidates": [
+                      {
+                        "selector": {
+                          "platform": [
+                            "PLATFORM_UNSPECIFIED"
+                          ],
+                          "lang": "en"
+                        },
+                        "responses": [
+                          {
+                            "text": {
+                              "variants": [
+                                {
+                                  "text": "Awesome! I'll block that time off for you next. (This feature coming soon!)"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                "targetPageId": "END_SESSION"
+              },
+              "name": "exit_after_yes"
+            },
+            {
+              "triggerIntentId": "5f66ec20-9a5d-44ce-b5f0-49110e7b676a",
+              "transitionEventHandler": {
+                "beforeTransition": {
+                  "function": {
+                    "name": "get_more_slots",
+                    "webhookFulfillmentId": "bb054027-ddb8-48d8-bd64-873e1809d375"
+                  },
+                  "playbackInterruptionSettings": {},
+                  "dtmfSettings": {
+                    "useSystemEntityRule": false
+                  }
+                },
+                "targetPageId": "8a2b9714-c5eb-426a-bce4-bcf716ab1a5a"
+              },
+              "name": "2837aedf-527f-44ee-b67b-fd3ca02962d2"
+            },
+            {
+              "condition": {
+                "restriction": {
+                  "comparator": "EQUALS",
+                  "lhs": {
+                    "member": {
+                      "expressions": [
+                        {
+                          "value": "$page"
+                        },
+                        {
+                          "value": "params"
+                        },
+                        {
+                          "value": "status"
+                        }
+                      ]
+                    }
+                  },
+                  "rhs": {
+                    "phrase": {
+                      "values": [
+                        "FINAL"
+                      ]
+                    }
+                  }
+                }
+              },
+              "transitionEventHandler": {
+                "beforeTransition": {
+                  "staticUserResponse": {
+                    "candidates": [
+                      {
+                        "selector": {
+                          "platform": [
+                            "PLATFORM_UNSPECIFIED"
+                          ],
+                          "lang": "en"
+                        },
+                        "responses": [
+                          {
+                            "text": {
+                              "variants": [
+                                {
+                                  "text": "Great! Let me check real-time availability for your $session.params.screens_needed screens on $session.params.appointment_date."
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "function": {
+                    "name": "availability",
+                    "webhookFulfillmentId": "bb054027-ddb8-48d8-bd64-873e1809d375"
+                  },
+                  "playbackInterruptionSettings": {},
+                  "dtmfSettings": {
+                    "useSystemEntityRule": false
+                  }
+                }
+              },
+              "name": "e62d8701-6f7f-495d-806b-9f13f0942046",
+              "conditionString": "$page.params.status = \"FINAL\""
+            }
+          ],
+          "etag": "67e5f246"
+        }
+      },
+      {
+        "key": "8a2b9714-c5eb-426a-bce4-bcf716ab1a5a",
+        "value": {
+          "displayName": "done_showing_more",
+          "etag": "67e5f137",
+          "transitionRoutes": [
+            {
+              "condition": "$session.params.booking_flow_completed = true",
+              "targetPage": "collect_contact_info",
+              "triggerFulfillment": {
                 "messages": [
                   {
                     "text": {
-                      "text": ["How many screens do you need serviced?"]
+                      "text": [
+                        "Great! Let\u2019s finish up with a few quick details."
+                      ]
                     }
                   }
                 ]
-              },
-              "repromptEventHandlers": [
-                {
-                  "event": "sys.no-match-1",
-                  "triggerFulfillment": {
+              }
+            }
+          ]
+        }
+      },
+      {
+        "key": "contact_info_page_key",
+        "value": {
+          "displayName": "collect_contact_info",
+          "entryFulfillment": {
+            "messages": [
+              {
+                "text": {
+                  "text": [
+                    "Awesome! Let\u2019s grab your contact info to lock in the appointment."
+                  ]
+                }
+              }
+            ]
+          },
+          "form": {
+            "parameters": [
+              {
+                "displayName": "user_name",
+                "entityType": "projects/-/locations/-/agents/-/entityTypes/sys.person",
+                "required": true,
+                "fillBehavior": {
+                  "initialPromptFulfillment": {
                     "messages": [
                       {
                         "text": {
                           "text": [
-                            "Sorry, I didn't catch that. How many screens do you need serviced? Please reply with a number like 3 or 4."
+                            "What\u2019s your full name?"
                           ]
                         }
                       }
                     ]
                   }
                 }
-              ]
-            }
+              },
+              {
+                "displayName": "user_phone",
+                "entityType": "projects/-/locations/-/agents/-/entityTypes/sys.phone-number",
+                "required": true,
+                "fillBehavior": {
+                  "initialPromptFulfillment": {
+                    "messages": [
+                      {
+                        "text": {
+                          "text": [
+                            "Thanks! What\u2019s the best phone number to reach you at?"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "displayName": "user_email",
+                "entityType": "projects/-/locations/-/agents/-/entityTypes/sys.email",
+                "required": false,
+                "fillBehavior": {
+                  "initialPromptFulfillment": {
+                    "messages": [
+                      {
+                        "text": {
+                          "text": [
+                            "If you'd like, share your email (or say 'skip')."
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                "displayName": "text_confirmation",
+                "entityType": "projects/-/locations/-/agents/-/entityTypes/sys.confirmation",
+                "required": false,
+                "fillBehavior": {
+                  "initialPromptFulfillment": {
+                    "condition": "$session.params.user_email = \"\"",
+                    "messages": [
+                      {
+                        "text": {
+                          "text": [
+                            "No problem! Just to confirm, is $session.params.user_phone a mobile number that can receive text messages?"
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           },
-          {
-            "displayName": "appointment_date",
-            "entityType": "@sys.date",
-            "required": true,
-            "fillBehavior": {
-              "initialPromptFulfillment": {
+          "transitionRoutes": [
+            {
+              "condition": "$page.params.status = \"FINAL\"",
+              "triggerFulfillment": {
                 "messages": [
                   {
                     "text": {
-                      "text": ["What day works best for your appointment?"]
+                      "text": [
+                        "Perfect! You\u2019re all set: $session.params.user_name at $session.params.user_phone"
+                      ]
+                    }
+                  },
+                  {
+                    "text": {
+                      "text": [
+                        "If you didn\u2019t book a time yet, just tap below to choose a time that works for you:"
+                      ]
+                    }
+                  },
+                  {
+                    "payload": {
+                      "richContent": [
+                        [
+                          {
+                            "type": "button",
+                            "icon": {
+                              "type": "chevron_right"
+                            },
+                            "text": "\ud83d\udcc5 Book Now",
+                            "link": "https://clienthub.getjobber.com/booking/53768b13-9e9c-43b6-8f7f-6f53ef831bb4"
+                          }
+                        ]
+                      ]
                     }
                   }
                 ]
-              }
+              },
+              "targetPage": "End Session"
             }
-          }
-        ]
-      },
-      "transitionRoutes": [
-        {
-          "condition": "$page.params.status = \"FINAL\"",
-          "triggerFulfillment": {
-            "messages": [
-              {
-                "text": {
-                  "text": [
-                    "Great! Let me check real-time availability for your $session.params.screens_needed screens on $session.params.appointment_date."
-                  ]
-                }
-              }
-            ],
-            "webhook": "Get availability Webhook",
-            "tag": "availability"
-          }
-        },
-        {
-          "intent": "availability_more",
-          "triggerFulfillment": {
-            "webhook": "Get availability Webhook",
-            "tag": "get_more_slots"
-          }
-        },
-        {
-          "intent": "availability_yes",
-          "targetPage": "booking_confirmation"
+          ]
         }
-      ]
-    },
-    {
-      "displayName": "booking_confirmation",
-      "entryFulfillment": {
-        "messages": [
-          {
-            "text": {
-              "text": [
-                "Awesome! I'll block that time off for you next. (This feature coming soon!)"
-              ]
-            }
-          }
-        ]
       }
-    }
-  ]
+    ],
+    "fulfillments": [
+      {
+        "key": "bb054027-ddb8-48d8-bd64-873e1809d375",
+        "value": {
+          "id": "bb054027-ddb8-48d8-bd64-873e1809d375",
+          "name": "Get availability Webhook",
+          "webhook": {
+            "url": "https://sbkchatbot-webhook-2.onrender.com/get_availability",
+            "webhookTimeout": 5,
+            "webhookType": "STANDARD",
+            "encryptedUsername": "ARaR7SZlT4CUTMWTFjC8Sm6PQ43z5XO0mk85Bi/erlD4",
+            "encryptedPassword": "ARaR7Sa0Ekll0eS8vADHUb5B7a9w7boyQKZi7vHkDkVu"
+          }
+        }
+      }
+    ],
+    "webhooks": [
+      {
+        "key": "bb054027-ddb8-48d8-bd64-873e1809d375",
+        "value": {
+          "name": "projects/-/locations/-/agents/-/webhooks/bb054027-ddb8-48d8-bd64-873e1809d375",
+          "displayName": "Get availability Webhook",
+          "genericWebService": {
+            "uri": "https://sbkchatbot-webhook-2.onrender.com/get_availability",
+            "webhookType": "STANDARD"
+          },
+          "timeout": {
+            "seconds": 5
+          }
+        }
+      }
+    ]
+  }
 }

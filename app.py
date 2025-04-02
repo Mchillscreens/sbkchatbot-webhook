@@ -197,7 +197,11 @@ def send_booking_request():
     "state": parameters.get("state", "Not provided"),
     "zip_code": parameters.get("zip_code", "Not provided"),
     "screens_needed": screens_needed,
+    "frame_color": parameters.get("frame_color", "Not provided"),
+    "screen_material": parameters.get("screen_material", "Not provided"),
+    "special_conditions": parameters.get("special_conditions", "Not provided"),
 }
+print("Payload being sent to Zapier:", payload)
 
 
     response = requests.post(ZAPIER_WEBHOOK_URL, json=payload)

@@ -1,1 +1,2 @@
 *.json
+echo "breezy-calendar-interation-dab07558a5f0.json" >> .gitignore
