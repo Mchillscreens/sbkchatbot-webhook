@@ -201,8 +201,6 @@ def send_booking_request():
     "screen_material": parameters.get("screen_material", "Not provided"),
     "special_conditions": parameters.get("special_conditions", "Not provided"),
 }
-print("Payload being sent to Zapier:", payload)
-
 
     response = requests.post(ZAPIER_WEBHOOK_URL, json=payload)
     print("📤 Sent to Zapier:", payload)
